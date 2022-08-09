@@ -1,5 +1,7 @@
 # prototype_colorimeter_firmware 
 
+![alt text](/images/prototype_1.png)
+
 Development firmware (circuitpython) for our new stand alone colorimeter. 
 
 ## Requirements 
