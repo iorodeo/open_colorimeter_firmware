@@ -1,0 +1,2 @@
+cp *.py  /media/$USER/CIRCUITPY
+sync
