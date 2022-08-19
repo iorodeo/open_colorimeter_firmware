@@ -55,7 +55,7 @@ class Colorimeter:
 
         # Create absorbance value text label
         dummy_value = 0.0
-        value_str = f'{dummy_value:1.3f}'
+        value_str = f'{dummy_value:1.2f}'
         text_color = self.color_to_rgb['white']
         self.value_label = label.Label(self.font, text=value_str, color=text_color, scale=2)
         bbox = self.value_label.bounding_box
@@ -81,7 +81,8 @@ class Colorimeter:
         # Set up light sensor
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = adafruit_tsl2591.TSL2591(i2c)
-        self.sensor.gain = adafruit_tsl2591.GAIN_HIGH
+        self.sensor.gain = adafruit_tsl2591.GAIN_MED
+        self.channel = 0
 
         # Get gamepad 
         self.pad = gamepadshift.GamePadShift(
@@ -97,10 +98,17 @@ class Colorimeter:
         self.is_blanked = False
         board.DISPLAY.show(self.group)
 
+    def read_sensor(self):
+        values = self.sensor.raw_luminosity
+        #print(values)
+        return values[self.channel]
+
+
     def blank_sensor(self):
         blank_samples = ulab.numpy.zeros((self.NUM_BLANK,))
         for i in range(self.NUM_BLANK):
-            blank_samples[i] = float(self.sensor.full_spectrum)
+            sensor_value = self.read_sensor()
+            blank_samples[i] = float(sensor_value)
             time.sleep(self.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
 
@@ -112,12 +120,11 @@ class Colorimeter:
                 self.blank_label.text = ' BLANKING  '
                 self.blank_sensor()
                 self.blank_label.text = '           '
-
-            sensor_value = float(self.sensor.full_spectrum)
+            sensor_value = float(self.read_sensor())
             transmittance = sensor_value/self.blank_value
             absorbance = -ulab.numpy.log10(transmittance)
             absorbance = absorbance if absorbance > 0.0 else 0.0
-            self.value_label.text = f'{absorbance:1.3f}'
+            self.value_label.text = f'{absorbance:1.2f}'
 
             time.sleep(self.LOOP_DT)
             board.DISPLAY.show(self.group)
