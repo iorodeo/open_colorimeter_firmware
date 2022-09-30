@@ -1,4 +1,4 @@
-# open_colorimeter_firmware 
+# Open Colorimeter Firmware 
 
 ![alt text](/images/prototype_1.png)
 
