@@ -1,35 +1,26 @@
 import board
 import displayio
 import terminalio
-import collections
+import constants
 from adafruit_display_text import label
 from adafruit_bitmap_font import bitmap_font
 
 
 class MeasureScreen:
 
-    COLOR_TO_RGB = collections.OrderedDict({ 
-        'black' : 0x000000, 
-        'gray'  : 0x9f9f9f, 
-        'red'   : 0xff0000, 
-        'green' : 0x00ff00,
-        'blue'  : 0x0000ff,
-        'white' : 0xffffff, 
-        })
-
     def __init__(self):
 
         # Setup color palette
-        self.color_to_index = {k:i for (i,k) in enumerate(self.COLOR_TO_RGB)}
-        self.palette = displayio.Palette(len(self.COLOR_TO_RGB))
-        for i, palette_tuple in enumerate(self.COLOR_TO_RGB.items()):
+        self.color_to_index = {k:i for (i,k) in enumerate(constants.COLOR_TO_RGB)}
+        self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
+        for i, palette_tuple in enumerate(constants.COLOR_TO_RGB.items()):
             self.palette[i] = palette_tuple[1]   
 
         # Create tile grid
         self.bitmap = displayio.Bitmap( 
                 board.DISPLAY.width, 
                 board.DISPLAY.height, 
-                len(self.COLOR_TO_RGB)
+                len(constants.COLOR_TO_RGB)
                 )
         self.bitmap.fill(self.color_to_index['black'])
         self.tile_grid = displayio.TileGrid(self.bitmap,pixel_shader=self.palette)
@@ -37,7 +28,7 @@ class MeasureScreen:
 
         # Create header text label
         header_str = 'ABSORBANCE'
-        text_color = self.COLOR_TO_RGB['white']
+        text_color = constants.COLOR_TO_RGB['white']
         self.header_label = label.Label(self.font, text=header_str, color=text_color, scale=2)
         bbox = self.header_label.bounding_box
         self.header_label.x = board.DISPLAY.width//2 - 2*bbox[2]//2
@@ -46,7 +37,7 @@ class MeasureScreen:
         # Create absorbance value text label
         dummy_value = 0.0
         value_str = f'{dummy_value:1.2f}'
-        text_color = self.COLOR_TO_RGB['white']
+        text_color = constants.COLOR_TO_RGB['white']
         self.value_label = label.Label(self.font, text=value_str, color=text_color, scale=2)
         bbox = self.value_label.bounding_box
         self.value_label.x = board.DISPLAY.width//2 - 2*bbox[2]//2
@@ -54,7 +45,7 @@ class MeasureScreen:
         
         # Create text label for blanking info
         blank_str = 'INITIALIZING' 
-        text_color = self.COLOR_TO_RGB['white']
+        text_color = constants.COLOR_TO_RGB['white']
         self.blank_label = label.Label(self.font, text=blank_str, color=text_color, scale=1)
         bbox = self.blank_label.bounding_box
         self.blank_label.x = board.DISPLAY.width//2 - bbox[2]//2
