@@ -1,8 +1,8 @@
-# prototype_colorimeter_firmware 
+# open_colorimeter_firmware 
 
 ![alt text](/images/prototype_1.png)
 
-Development firmware (circuitpython) for our new stand alone colorimeter. 
+Firmware (circuitpython) for our new stand alone colorimeter (in development). 
 
 ## Requirements 
 
