@@ -71,11 +71,10 @@ class MeasureScreen:
         self.blank_label.text = '           '
 
 
-
 class SplashScreen:
 
     def __init__(self):
-        self.bitmap = displayio.OnDiskBitmap('/assets/splashscreen_2.bmp')
+        self.bitmap = displayio.OnDiskBitmap(f'/assets/{constants.SPLASHSCREEN_BMP}')
         self.tile_grid = displayio.TileGrid(
                 self.bitmap, 
                 pixel_shader = self.bitmap.pixel_shader, 

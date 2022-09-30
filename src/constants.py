@@ -5,6 +5,7 @@ BLANK_DT = 0.05
 SPLASH_DT = 4.0 
 DEBOUNCE_DT = 0.3 
 NUM_BLANK_SAMPLES = 50 
+SPLASHSCREEN_BMP = 'splashscreen.bmp'
 
 BUTTON = { 
         'no button'   : 0b00000000,
