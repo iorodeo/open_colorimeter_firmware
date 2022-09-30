@@ -1,6 +1,6 @@
 # Open Colorimeter Firmware 
 
-![alt text](/images/prototype_1.png)
+![alt text](/images/open_colorimeter.png)
 
 Firmware (circuitpython) for our new stand alone colorimeter (in development). 
 
