@@ -8,6 +8,7 @@ Firmware (circuitpython) for our new stand alone colorimeter (in development).
 
 * circuitpython >= 7.32
 * adafruit_bitmap_font
+* adafruit_bus_device
 * adafruit_display_text
 * adafruit_tsl2591
 
