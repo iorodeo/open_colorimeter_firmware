@@ -1,4 +1,3 @@
-
 import time
 import ulab
 import busio
@@ -8,21 +7,21 @@ import adafruit_tsl2591
 import gamepadshift
 import constants
 
-from screens import SplashScreen, MeasureScreen
+from measure_screen import MeasureScreen
+from menu_screen import MenuScreen
 
 class Mode:
-    SPLASH  = 0
-    MEASURE = 1
-    MENU    = 2
+    MEASURE = 0
+    MENU    = 1
 
 class Colorimeter:
 
     def __init__(self):
         # Create screens
-        self.splash_screen = SplashScreen()
         self.measure_screen = MeasureScreen()
-        self.mode = Mode.SPLASH 
-        board.DISPLAY.show(self.splash_screen.group)
+        self.menu_screen = MenuScreen()
+        self.mode = Mode.MEASURE
+        board.DISPLAY.brightness = 1.0
 
         # Setup gamepad inputs
         self.last_button_press = time.monotonic()
@@ -94,17 +93,14 @@ class Colorimeter:
     def run(self):
         while True:
             self.handle_button_press()
-            if self.mode == Mode.SPLASH:
-                active_group = self.splash_screen.group
-                if time.monotonic() > constants.SPLASH_DT:
-                    self.mode = Mode.MEASURE
-            elif self.mode == Mode.MEASURE:
+            if self.mode == Mode.MEASURE:
                 sensor_value = float(self.read_sensor())
                 transmittance = sensor_value/self.blank_value
                 absorbance = -ulab.numpy.log10(transmittance)
                 absorbance = absorbance if absorbance > 0.0 else 0.0
                 self.measure_screen.set_absorbance(absorbance)
                 active_group = self.measure_screen.group
-
+            elif self.mode == Mode.MENU:
+                active_group = self.menu_screen.group
             board.DISPLAY.show(active_group)
             time.sleep(constants.LOOP_DT)

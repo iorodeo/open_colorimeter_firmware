@@ -2,10 +2,9 @@ import collections
 
 LOOP_DT = 0.1
 BLANK_DT = 0.05
-SPLASH_DT = 4.0 
 DEBOUNCE_DT = 0.3 
+
 NUM_BLANK_SAMPLES = 50 
-SPLASHSCREEN_BMP = 'splashscreen.bmp'
 
 BUTTON = { 
         'no button'   : 0b00000000,
@@ -20,10 +19,13 @@ BUTTON = {
         }
 
 COLOR_TO_RGB = collections.OrderedDict({ 
-    'black' : 0x000000, 
-    'gray'  : 0x9f9f9f, 
-    'red'   : 0xff0000, 
-    'green' : 0x00ff00,
-    'blue'  : 0x0000ff,
-    'white' : 0xffffff, 
+    'black'  : 0x000000, 
+    'gray'   : 0x9f9f9f, 
+    'red'    : 0xff0000, 
+    'green'  : 0x00ff00,
+    'blue'   : 0x0000ff,
+    'white'  : 0xffffff, 
+    'orange' : 0xffb447
     })
+
+SPLASHSCREEN_BMP = 'splashscreen.bmp'
