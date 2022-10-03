@@ -26,12 +26,15 @@ class MenuScreen:
 
         # Create header text label
         header_str = 'Menu'
-        text_color = constants.COLOR_TO_RGB['white']
+        text_color = constants.COLOR_TO_RGB['black']
         self.header_label = label.Label(
                 fonts.hack_bold_14pt, 
                 text=header_str, 
                 color=text_color, 
-                scale=font_scale
+                scale=font_scale,
+                background_color = constants.COLOR_TO_RGB['orange'],
+                padding_left = 10, 
+                padding_right = 10
                 )
         bbox = self.header_label.bounding_box
         self.header_label.x = board.DISPLAY.width//2 - font_scale*bbox[2]//2
