@@ -86,3 +86,6 @@ class MeasureScreen:
     def set_blanked(self):
         self.blank_label.text = '           '
 
+    def show(self):
+        board.DISPLAY.show(self.group)
+

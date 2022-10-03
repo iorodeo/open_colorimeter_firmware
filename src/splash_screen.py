@@ -1,3 +1,4 @@
+import board
 import displayio
 import constants
 
@@ -12,3 +13,6 @@ class SplashScreen:
                 )
         self.group = displayio.Group()
         self.group.append(self.tile_grid)
+
+    def show(self):
+        board.DISPLAY.show(self.group)

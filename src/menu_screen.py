@@ -4,10 +4,16 @@ import terminalio
 import constants
 import fonts
 from adafruit_display_text import label
+from adafruit_display_shapes import line 
 
 class MenuScreen:
 
+    PADDING_HEADER = 4
+    PADDING_ITEM = 5
+
     def __init__(self):
+        self.group = displayio.Group()
+
         # Setup color palette
         self.color_to_index = {k:i for (i,k) in enumerate(constants.COLOR_TO_RGB)}
         self.palette = displayio.Palette(len(constants.COLOR_TO_RGB))
@@ -26,21 +32,61 @@ class MenuScreen:
 
         # Create header text label
         header_str = 'Menu'
-        text_color = constants.COLOR_TO_RGB['black']
         self.header_label = label.Label(
                 fonts.hack_bold_14pt, 
-                text=header_str, 
-                color=text_color, 
-                scale=font_scale,
-                background_color = constants.COLOR_TO_RGB['orange'],
-                padding_left = 10, 
-                padding_right = 10
+                text = header_str, 
+                color = constants.COLOR_TO_RGB['white'], 
+                scale = font_scale,
+                anchor_point = (0.5, 1.0)
                 )
-        bbox = self.header_label.bounding_box
-        self.header_label.x = board.DISPLAY.width//2 - font_scale*bbox[2]//2
-        self.header_label.y = bbox[3]  
+        header_x = board.DISPLAY.width//2 
+        header_y = self.header_label.bounding_box[3] + self.PADDING_HEADER 
+        self.header_label.anchored_position = header_x, header_y
+
+        # Create line under menu
+        menu_line_x0 = 0
+        menu_line_y0 = header_y + self.PADDING_HEADER 
+        menu_line_x1 = board.DISPLAY.width
+        menu_line_y1 = menu_line_y0
+        self.menu_line = line.Line(
+                menu_line_x0, 
+                menu_line_y0, 
+                menu_line_x1, 
+                menu_line_y1, 
+                constants.COLOR_TO_RGB['gray']
+                )
+
+        # Test populate some items
+        vert_pix_remaining = board.DISPLAY.height - (menu_line_y1 + 1)
+        test_label = label.Label(fonts.hack_bold_10pt, text='test',scale=font_scale)
+        label_dy = test_label.bounding_box[3] + self.PADDING_ITEM
+        items_per_screen = vert_pix_remaining//label_dy
+
+        self.item_labels = []
+        for i in range(items_per_screen): 
+            pos_x = 2
+            pos_y = menu_line_y0 + (i+1)*label_dy 
+            label_tmp = label.Label(
+                     fonts.hack_bold_10pt,
+                     text = f'{i}: substance',
+                     color = constants.COLOR_TO_RGB['white'],
+                     scale = font_scale,
+                     anchor_point = (0.0, 1.0),
+                     anchored_position = (pos_x, pos_y),
+                     padding_right = 160
+                     )
+            self.item_labels.append(label_tmp)
 
         # Ceate display group and add items to it
-        self.group = displayio.Group()
         self.group.append(self.tile_grid)
         self.group.append(self.header_label)
+        self.group.append(self.menu_line)
+        for item in self.item_labels:
+            self.group.append(item)
+
+        self.item_labels[0].color = constants.COLOR_TO_RGB['black']
+        self.item_labels[0].background_color = constants.COLOR_TO_RGB['orange']
+
+
+    def show(self):
+        board.DISPLAY.show(self.group)

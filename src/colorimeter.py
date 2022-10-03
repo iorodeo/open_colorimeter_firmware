@@ -7,6 +7,7 @@ import adafruit_tsl2591
 import gamepadshift
 import constants
 
+import dummy_cal
 from measure_screen import MeasureScreen
 from menu_screen import MenuScreen
 
@@ -43,6 +44,10 @@ class Colorimeter:
         self.measure_screen.set_not_blanked()
         self.is_blanked = False
 
+        # Load dummy calibrations for developement
+        self.calibrations = dummy_cal.dummy_cal
+
+
     def read_sensor(self):
         values = self.sensor.raw_luminosity
         return values[self.channel]
@@ -64,18 +69,24 @@ class Colorimeter:
                 return 
             else:
                 self.last_button_press = time.monotonic()
-            self.print_button_info(buttons)
 
             if self.mode == Mode.MEASURE:
                 if buttons & constants.BUTTON['blank']:
                     self.measure_screen.set_blanking()
                     self.blank_sensor()
                     self.measure_screen.set_blanked()
-                if buttons & constants.BUTTON['menu_toggle']:
+                elif buttons & constants.BUTTON['menu_toggle']:
                     self.mode = Mode.MENU
+
             elif self.mode == Mode.MENU:
                 if buttons & constants.BUTTON['menu_toggle']:
                     self.mode = Mode.MEASURE
+                elif buttons & constants.BUTTON['menu_up']:
+                    print('menu up')
+                elif buttons & constants.BUTTON['menu_down']:
+                    print('menu down')
+                elif buttons & constants.BUTTON['menu_right']:
+                    print('menu right')
 
     def check_debounce(self):
         button_dt = time.monotonic() - self.last_button_press
@@ -86,9 +97,7 @@ class Colorimeter:
 
     def print_button_info(self, buttons):
         buttons_to_name = {v:k for k,v in constants.BUTTON.items()}
-        #print(buttons, bin(buttons))
         print(buttons_to_name[buttons], self.mode)
-
 
     def run(self):
         while True:
@@ -99,8 +108,7 @@ class Colorimeter:
                 absorbance = -ulab.numpy.log10(transmittance)
                 absorbance = absorbance if absorbance > 0.0 else 0.0
                 self.measure_screen.set_absorbance(absorbance)
-                active_group = self.measure_screen.group
+                self.measure_screen.show()
             elif self.mode == Mode.MENU:
-                active_group = self.menu_screen.group
-            board.DISPLAY.show(active_group)
+                self.menu_screen.show()
             time.sleep(constants.LOOP_DT)
