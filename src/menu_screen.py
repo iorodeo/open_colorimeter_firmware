@@ -60,10 +60,10 @@ class MenuScreen:
         vert_pix_remaining = board.DISPLAY.height - (menu_line_y1 + 1)
         test_label = label.Label(fonts.hack_bold_10pt, text='test',scale=font_scale)
         label_dy = test_label.bounding_box[3] + self.PADDING_ITEM
-        items_per_screen = vert_pix_remaining//label_dy
+        self.items_per_screen = vert_pix_remaining//label_dy
 
         self.item_labels = []
-        for i in range(items_per_screen): 
+        for i in range(self.items_per_screen): 
             pos_x = 2
             pos_y = menu_line_y0 + (i+1)*label_dy 
             label_tmp = label.Label(
@@ -81,12 +81,23 @@ class MenuScreen:
         self.group.append(self.tile_grid)
         self.group.append(self.header_label)
         self.group.append(self.menu_line)
-        for item in self.item_labels:
-            self.group.append(item)
+        for item_label in self.item_labels:
+            self.group.append(item_label)
 
-        self.item_labels[0].color = constants.COLOR_TO_RGB['black']
-        self.item_labels[0].background_color = constants.COLOR_TO_RGB['orange']
+        self.set_curr_item(0)
 
+    def set_menu_items(self, text_list):
+        for item_label, item_text in zip(self.item_labels, text_list):
+            item_label.text = item_text 
+
+    def set_curr_item(self, num):
+        for i, item_label in enumerate(self.item_labels):
+            if i==num:
+                item_label.color = constants.COLOR_TO_RGB['black']
+                item_label.background_color = constants.COLOR_TO_RGB['orange']
+            else:
+                item_label.color = constants.COLOR_TO_RGB['white']
+                item_label.background_color = constants.COLOR_TO_RGB['black']
 
     def show(self):
         board.DISPLAY.show(self.group)

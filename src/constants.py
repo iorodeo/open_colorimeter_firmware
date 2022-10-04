@@ -1,8 +1,9 @@
+import board
 import collections
 
 LOOP_DT = 0.1
 BLANK_DT = 0.05
-DEBOUNCE_DT = 0.3 
+DEBOUNCE_DT = 0.5 
 
 NUM_BLANK_SAMPLES = 50 
 
@@ -29,3 +30,5 @@ COLOR_TO_RGB = collections.OrderedDict({
     })
 
 SPLASHSCREEN_BMP = 'splashscreen.bmp'
+
+BATTERY_AIN_PIN = board.A6
