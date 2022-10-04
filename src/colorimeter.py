@@ -82,11 +82,14 @@ class Colorimeter:
                 if buttons & constants.BUTTON['menu_toggle']:
                     self.mode = Mode.MEASURE
                 elif buttons & constants.BUTTON['menu_up']:
-                    print('menu up')
+                    #print('menu up')
+                    pass
                 elif buttons & constants.BUTTON['menu_down']:
-                    print('menu down')
+                    #print('menu down')
+                    pass
                 elif buttons & constants.BUTTON['menu_right']:
-                    print('menu right')
+                    #print('menu right')
+                    pass
 
     def check_debounce(self):
         button_dt = time.monotonic() - self.last_button_press
