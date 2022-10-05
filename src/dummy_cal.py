@@ -23,7 +23,7 @@ else:
 
     dummy_cal = {
             'FD&C Blue1' : {
-                'units'    : 'mg', 
+                'units'    : 'mg/L', 
                 'fit_type' : 'linear',
                 'fit_coef' : [random.random(), 0.0], 
                 'range'    : {'min': 0.0, 'max': 30.0}, 

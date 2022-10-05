@@ -159,7 +159,7 @@ class MeasureScreen:
         self.blank_label.text = '           '
 
     def set_vbat(self, value):
-        self.vbat_label.text = f'vbat {value:1.1f}'
+        self.vbat_label.text = f'bat {value:1.1f}V'
 
     def show(self):
         board.DISPLAY.show(self.group)

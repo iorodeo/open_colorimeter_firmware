@@ -9,6 +9,7 @@ import gamepadshift
 import constants
 
 import dummy_cal
+from battery_monitor import BatteryMonitor
 from measure_screen import MeasureScreen
 from menu_screen import MenuScreen
 
@@ -19,12 +20,13 @@ class Mode:
 class Colorimeter:
 
     def __init__(self):
+
         # Create screens
         self.measure_screen = MeasureScreen()
         self.menu_screen = MenuScreen()
         board.DISPLAY.brightness = 1.0
 
-        # Setup gamepad inputs
+        # Setup gamepad inputs - change this (Keypad shift??)
         self.last_button_press = time.monotonic()
         self.pad = gamepadshift.GamePadShift(
                 digitalio.DigitalInOut(board.BUTTON_CLOCK), 
@@ -44,9 +46,9 @@ class Colorimeter:
         self.sensor.integration_time = adafruit_tsl2591.INTEGRATIONTIME_100MS
         self.channel = 0
 
-        self.battery_ain = analogio.AnalogIn(constants.BATTERY_AIN_PIN) 
 
         # Initialize state 
+        self.battery_monitor = BatteryMonitor()
         self.blank_value = 0.0
         self.blank_sensor()
         self.measure_screen.set_not_blanked()
@@ -55,10 +57,6 @@ class Colorimeter:
         self.menu_view_pos = 0
         self.menu_item_pos = 0
         self.measurement = self.menu_items[0] 
-
-    @property
-    def vbat(self):
-        return 0.5*ain_to_volt(self.battery_ain.value)
 
     @property
     def num_menu_items(self):
@@ -169,13 +167,11 @@ class Colorimeter:
                     units = self.calibrations[self.measurement]['units']
                     value = 0.0
                     self.measure_screen.set_measurement(name, units, value)
-                self.measure_screen.set_vbat(3.1)
+                self.battery_monitor.update()
+                self.measure_screen.set_vbat(self.battery_monitor.voltage)
                 self.measure_screen.show()
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
             time.sleep(constants.LOOP_DT)
 
 
-# -----------------------------------------------------------------------------
-def ain_to_volt(value):
-    return 3.3*value/65536
