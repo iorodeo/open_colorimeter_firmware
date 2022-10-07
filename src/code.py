@@ -1,6 +1,5 @@
-import time
-import board
-import constants
+import sys
+sys.path.append('src')
 from splash_screen import SplashScreen
 
 # Show splash screen and display while other stuff loads
