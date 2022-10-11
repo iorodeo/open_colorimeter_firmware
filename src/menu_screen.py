@@ -33,7 +33,7 @@ class MenuScreen:
         # Create header text label
         header_str = 'Menu'
         self.header_label = label.Label(
-                fonts.hack_bold_14pt, 
+                fonts.font_14pt, 
                 text = header_str, 
                 color = constants.COLOR_TO_RGB['white'], 
                 scale = font_scale,
@@ -58,7 +58,7 @@ class MenuScreen:
 
         # Test populate some items
         vert_pix_remaining = board.DISPLAY.height - (menu_line_y1 + 1)
-        test_label = label.Label(fonts.hack_bold_10pt, text='test',scale=font_scale)
+        test_label = label.Label(fonts.font_10pt, text='test',scale=font_scale)
         label_dy = test_label.bounding_box[3] + self.PADDING_ITEM
         self.items_per_screen = vert_pix_remaining//label_dy
 
@@ -67,7 +67,7 @@ class MenuScreen:
             pos_x = 2
             pos_y = menu_line_y0 + (i+1)*label_dy 
             label_tmp = label.Label(
-                     fonts.hack_bold_10pt,
+                     fonts.font_10pt,
                      text = f'{i}: substance',
                      color = constants.COLOR_TO_RGB['white'],
                      scale = font_scale,

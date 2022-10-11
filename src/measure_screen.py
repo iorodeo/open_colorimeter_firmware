@@ -8,9 +8,9 @@ from adafruit_display_text import label
 
 class MeasureScreen:
 
-    SPACING_HEADER_LABEL = 7 
-    SPACING_VALUE_LABEL = 12 
-    SPACING_BLANK_LABEL = 8 
+    SPACING_HEADER_LABEL = 18 
+    SPACING_VALUE_LABEL =  16  
+    SPACING_BLANK_LABEL = 14  
 
     INFO_XPOS = 10
     INFO_YPOS_START = board.DISPLAY.height - 36 
@@ -38,7 +38,7 @@ class MeasureScreen:
         header_str = 'Absorbance'
         text_color = constants.COLOR_TO_RGB['white']
         self.header_label = label.Label(
-                fonts.hack_bold_14pt, 
+                fonts.font_14pt, 
                 text = header_str, 
                 color = text_color, 
                 scale = font_scale,
@@ -54,7 +54,7 @@ class MeasureScreen:
         value_str = f'{dummy_value:1.2f}'
         text_color = constants.COLOR_TO_RGB['white']
         self.value_label = label.Label(
-                fonts.hack_bold_14pt, 
+                fonts.font_14pt, 
                 text = value_str, 
                 color = text_color, 
                 scale = font_scale,
@@ -69,7 +69,7 @@ class MeasureScreen:
         blank_str = 'initializing' 
         text_color = constants.COLOR_TO_RGB['orange']
         self.blank_label = label.Label(
-                fonts.hack_bold_10pt, 
+                fonts.font_10pt, 
                 text=blank_str, 
                 color=text_color, 
                 scale=font_scale,
@@ -81,10 +81,11 @@ class MeasureScreen:
         self.blank_label.anchored_position = (blank_label_x, blank_label_y)
 
         # Create gain text label
-        gain_str = 'gain med'
+        #gain_str = 'gain med'
+        gain_str = ''
         text_color = constants.COLOR_TO_RGB['white']
         self.gain_label = label.Label(
-                fonts.hack_bold_10pt, 
+                fonts.font_10pt, 
                 text = gain_str, 
                 color = text_color, 
                 scale = font_scale,
@@ -96,10 +97,11 @@ class MeasureScreen:
         self.gain_label.anchored_position = (gain_label_x, gain_label_y)
 
         # Create integration time/window text label
-        iwin_str = 'iwin 100ms'
+        #iwin_str = 'iwin 100ms'
+        iwin_str = ''
         text_color = constants.COLOR_TO_RGB['white']
         self.iwin_label = label.Label(
-                fonts.hack_bold_10pt, 
+                fonts.font_10pt, 
                 text = iwin_str, 
                 color = text_color, 
                 scale = font_scale,
@@ -110,20 +112,20 @@ class MeasureScreen:
         iwin_label_y = gain_label_y + self.INFO_YPOS_STEP
         self.iwin_label.anchored_position = (iwin_label_x, iwin_label_y)
 
-        # Create integration time/window text label
-        vbat_str = 'vbat 0.0V'
-        text_color = constants.COLOR_TO_RGB['white']
-        self.vbat_label = label.Label(
-                fonts.hack_bold_10pt, 
-                text = vbat_str, 
-                color = text_color, 
-                scale = font_scale,
-                anchor_point = (0.0,1.0),
-                )
-        bbox = self.gain_label.bounding_box
-        vbat_label_x = self.INFO_XPOS 
-        vbat_label_y = iwin_label_y + self.INFO_YPOS_STEP
-        self.vbat_label.anchored_position = (vbat_label_x, vbat_label_y)
+        ## Create integration time/window text label
+        #vbat_str = 'vbat 0.0V'
+        #text_color = constants.COLOR_TO_RGB['white']
+        #self.vbat_label = label.Label(
+        #        fonts.font_10pt, 
+        #        text = vbat_str, 
+        #        color = text_color, 
+        #        scale = font_scale,
+        #        anchor_point = (0.0,1.0),
+        #        )
+        #bbox = self.gain_label.bounding_box
+        #vbat_label_x = self.INFO_XPOS 
+        #vbat_label_y = iwin_label_y + self.INFO_YPOS_STEP
+        #self.vbat_label.anchored_position = (vbat_label_x, vbat_label_y)
         
         # Ceate display group and add items to it
         self.group = displayio.Group()
@@ -133,15 +135,16 @@ class MeasureScreen:
         self.group.append(self.blank_label)
         self.group.append(self.gain_label)
         self.group.append(self.iwin_label)
-        self.group.append(self.vbat_label)
+        #self.group.append(self.vbat_label)
 
     def set_measurement(self, name, units, value):
         if units is None:
             self.header_label.text = name
-            self.value_label.text = f'{value:1.2f}'
+            label_text = f'{value:1.2f}'
         else:
             self.header_label.text = name
-            self.value_label.text = f'{value:1.2f} {units}'
+            label_text = f'{value:1.2f} {units}'
+        self.value_label.text = label_text.replace('0','O')
 
     def set_absorbance(self, absorbance):
         self.set_measurement('Absorbance', None, absorbance)

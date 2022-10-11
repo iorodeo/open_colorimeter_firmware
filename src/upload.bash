@@ -7,7 +7,9 @@ do
             ;;
         *.py)
             echo $entry "->" /media/$USER/CIRCUITPY/src
+            mkdir -p /media/$USER/CIRCUITPY/src
             cp $entry /media/$USER/CIRCUITPY/src
             ;;
     esac
 done
+sync

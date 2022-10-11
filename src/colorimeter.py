@@ -168,7 +168,7 @@ class Colorimeter:
                     value = 0.0
                     self.measure_screen.set_measurement(name, units, value)
                 self.battery_monitor.update()
-                self.measure_screen.set_vbat(self.battery_monitor.voltage)
+                #self.measure_screen.set_vbat(self.battery_monitor.voltage)
                 self.measure_screen.show()
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
