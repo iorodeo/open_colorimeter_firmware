@@ -24,6 +24,7 @@ your feather development board.
     - adafruit_bitmap_font
     - adafruit_bus_device
     - adafruit_display_text
+    - adafruit_display_shapes
     - adafruit_tsl2591
   
 
