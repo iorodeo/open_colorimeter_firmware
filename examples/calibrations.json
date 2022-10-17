@@ -1,0 +1,45 @@
+
+{ 
+    "FD&C Blue1" : {
+        "units"    : "mg/L", 
+        "fit_type" : "linear",
+        "fit_coef" : [1.0, 0.0], 
+        "range"    : {"min": 0.0, "max": 30.0}, 
+        "led"      : 630 
+        }, 
+    "Ammonnia" : {
+        "units"    : "ppm", 
+        "fit_type" : "linear",
+        "fit_coef" : [1.0, 0.0], 
+        "range"    : {"min": 0.0, "max": 8.0},
+        "led"      : 630 
+        },
+    "Nitrate" : {
+        "units"     : "ppm", 
+        "fit_type"  : "linear" ,
+        "fit_coef"  : [1.0, 0.0], 
+        "range"     : {"min": 0.0, "max": 200.0},
+        "led"       : 520 
+        },
+    "Phosphate" : {
+        "units"     : "ppm", 
+        "fit_type"  : "linear" ,
+        "fit_coef"  : [1.0, 0.0], 
+        "range"     : {"min": 0.0, "max": 30.0},
+        "led"       : 630 
+        },
+    "Sulfate" : {
+        "units"     : "ppm", 
+        "fit_type"  : "linear" ,
+        "fit_coef"  : [1.0, 0.0], 
+        "range"     : {"min": 0.0, "max": 300.0},
+        "led"       : 520 
+        },
+    "Calcium" : {
+        "units"     : "ppm", 
+        "fit_type"  : "linear" ,
+        "fit_coef"  : [1.0, 0.0], 
+        "range"     : {"min": 0.0, "max": 200.0},
+        "led"       : 575 
+        } 
+}
