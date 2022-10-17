@@ -1,17 +1,19 @@
 import time
 import ulab
-import busio
+import json
 import board
 import analogio
 import digitalio
-import adafruit_tsl2591
 import gamepadshift
 import constants
-
 import dummy_cal
+
+from light_sensor import LightSensor
+from light_sensor import LightSensorOverflow
+
 from battery_monitor import BatteryMonitor
-from measure_screen import MeasureScreen
 from menu_screen import MenuScreen
+from measure_screen import MeasureScreen
 
 class Mode:
     MEASURE = 0
@@ -21,10 +23,12 @@ class Colorimeter:
 
     def __init__(self):
 
+        self.battery_monitor = BatteryMonitor()
+
         # Create screens
+        board.DISPLAY.brightness = 1.0
         self.measure_screen = MeasureScreen()
         self.menu_screen = MenuScreen()
-        board.DISPLAY.brightness = 1.0
 
         # Setup gamepad inputs - change this (Keypad shift??)
         self.last_button_press = time.monotonic()
@@ -34,29 +38,32 @@ class Colorimeter:
                 digitalio.DigitalInOut(board.BUTTON_LATCH),
                 )
 
-        # Load dummy calibrations for developement
-        self.calibrations = dummy_cal.dummy_cal
+        # Load calibrations and populae menu items
+        self.load_calibrations()
         self.menu_items = ['Absorbance', 'Transmittance']
         self.menu_items.extend([k for k in self.calibrations])
-
-        # Set up light sensor
-        i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensor = adafruit_tsl2591.TSL2591(i2c)
-        self.sensor.gain = adafruit_tsl2591.GAIN_MED
-        self.sensor.integration_time = adafruit_tsl2591.INTEGRATIONTIME_100MS
-        self.channel = 0
-
-
-        # Initialize state 
-        self.battery_monitor = BatteryMonitor()
-        self.blank_value = 0.0
-        self.blank_sensor()
-        self.measure_screen.set_not_blanked()
-        self.is_blanked = False
         self.mode = Mode.MEASURE
         self.menu_view_pos = 0
         self.menu_item_pos = 0
         self.measurement = self.menu_items[0] 
+
+        # Setup light sensor and blanking data 
+        self.light_sensor = LightSensor()
+        self.blank_value = 0.0
+        self.blank_sensor()
+        self.measure_screen.set_not_blanked()
+        self.is_blanked = False
+
+
+    def load_calibrations(self):
+        self.calibrations = {}
+        try:
+            with open(constants.CALIBRATIONS_FILE,'r') as f:
+                self.calibrations = json.load(f)
+        except OSError:
+            # TODO: need to create some sort of temporary error 
+            # screen for when 
+            pass
 
     @property
     def num_menu_items(self):
@@ -90,24 +97,25 @@ class Colorimeter:
         pos = self.menu_item_pos - self.menu_view_pos
         self.menu_screen.set_curr_item(pos)
 
-    def read_sensor(self):
-        return float(self.sensor.raw_luminosity[self.channel])
-
-    def get_transmittance(self):
-        sensor_value = self.read_sensor()
-        transmittance = sensor_value/self.blank_value
+    @property
+    def transmittance(self):
+        transmittance = self.light_sensor.value/self.blank_value
         return transmittance
 
-    def get_absorbance(self):
-        transmittance = self.get_transmittance()
-        absorbance = -ulab.numpy.log10(transmittance)
+    @property
+    def absorbance(self):
+        absorbance = -ulab.numpy.log10(self.transmittance)
         absorbance = absorbance if absorbance > 0.0 else 0.0
         return absorbance
 
     def blank_sensor(self):
         blank_samples = ulab.numpy.zeros((constants.NUM_BLANK_SAMPLES,))
         for i in range(constants.NUM_BLANK_SAMPLES):
-            blank_samples[i] = self.read_sensor()
+            try:
+                value = self.light_sensor.value
+            except LightSensorOverflow:
+                value = self.light_sensor.max_counts
+            blank_samples[i] = value 
             time.sleep(constants.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
 
@@ -153,25 +161,37 @@ class Colorimeter:
         print(buttons_to_name[buttons], self.mode)
 
     def run(self):
+
         while True:
+
             self.handle_button_press()
+
             if self.mode == Mode.MEASURE:
+
                 if self.measurement == 'Absorbance':
-                    absorbance = self.get_absorbance()
-                    self.measure_screen.set_absorbance(absorbance)
+                    try:
+                        self.measure_screen.set_absorbance(self.absorbance)
+                    except LightSensorOverflow:
+                        self.measure_screen.set_absorbance_overflow()
+
                 elif self.measurement == 'Transmittance':
-                    transmittance = self.get_transmittance()
-                    self.measure_screen.set_transmittance(transmittance)
+                    try:
+                        self.measure_screen.set_transmittance(self.transmittance)
+                    except LightSensorOverflow:
+                        self.measure_screen.set_transmittance_overflow()
+
                 else:
                     name = self.measurement
                     units = self.calibrations[self.measurement]['units']
                     value = 0.0
                     self.measure_screen.set_measurement(name, units, value)
+
                 self.battery_monitor.update()
-                #self.measure_screen.set_vbat(self.battery_monitor.voltage)
+                self.measure_screen.set_bat(self.battery_monitor.percent)
                 self.measure_screen.show()
+
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
-            time.sleep(constants.LOOP_DT)
 
+            time.sleep(constants.LOOP_DT)
 

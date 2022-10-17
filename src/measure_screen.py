@@ -12,10 +12,6 @@ class MeasureScreen:
     SPACING_VALUE_LABEL =  16  
     SPACING_BLANK_LABEL = 14  
 
-    INFO_XPOS = 10
-    INFO_YPOS_START = board.DISPLAY.height - 36 
-    INFO_YPOS_STEP = 14 
-
     def __init__(self):
 
         # Setup color palette
@@ -51,7 +47,7 @@ class MeasureScreen:
 
         # Create absorbance value text label
         dummy_value = 0.0
-        value_str = f'{dummy_value:1.2f}'
+        value_str = f'{dummy_value:1.2f}'.replace('0','O')
         text_color = constants.COLOR_TO_RGB['white']
         self.value_label = label.Label(
                 fonts.font_14pt, 
@@ -80,52 +76,20 @@ class MeasureScreen:
         blank_label_y = value_label_y + bbox[3] + self.SPACING_BLANK_LABEL 
         self.blank_label.anchored_position = (blank_label_x, blank_label_y)
 
-        # Create gain text label
-        #gain_str = 'gain med'
-        gain_str = ''
-        text_color = constants.COLOR_TO_RGB['white']
-        self.gain_label = label.Label(
-                fonts.font_10pt, 
-                text = gain_str, 
-                color = text_color, 
-                scale = font_scale,
-                anchor_point = (0.0,1.0),
-                )
-        bbox = self.gain_label.bounding_box
-        gain_label_x = self.INFO_XPOS 
-        gain_label_y = self.INFO_YPOS_START
-        self.gain_label.anchored_position = (gain_label_x, gain_label_y)
-
         # Create integration time/window text label
-        #iwin_str = 'iwin 100ms'
-        iwin_str = ''
-        text_color = constants.COLOR_TO_RGB['white']
-        self.iwin_label = label.Label(
+        vbat_str = 'battery 100%'
+        text_color = constants.COLOR_TO_RGB['gray']
+        self.vbat_label = label.Label(
                 fonts.font_10pt, 
-                text = iwin_str, 
+                text = vbat_str, 
                 color = text_color, 
                 scale = font_scale,
-                anchor_point = (0.0,1.0),
+                anchor_point = (0.5,1.0),
                 )
-        bbox = self.gain_label.bounding_box
-        iwin_label_x = self.INFO_XPOS 
-        iwin_label_y = gain_label_y + self.INFO_YPOS_STEP
-        self.iwin_label.anchored_position = (iwin_label_x, iwin_label_y)
-
-        ## Create integration time/window text label
-        #vbat_str = 'vbat 0.0V'
-        #text_color = constants.COLOR_TO_RGB['white']
-        #self.vbat_label = label.Label(
-        #        fonts.font_10pt, 
-        #        text = vbat_str, 
-        #        color = text_color, 
-        #        scale = font_scale,
-        #        anchor_point = (0.0,1.0),
-        #        )
-        #bbox = self.gain_label.bounding_box
-        #vbat_label_x = self.INFO_XPOS 
-        #vbat_label_y = iwin_label_y + self.INFO_YPOS_STEP
-        #self.vbat_label.anchored_position = (vbat_label_x, vbat_label_y)
+        bbox = self.vbat_label.bounding_box
+        vbat_label_x = board.DISPLAY.width//2 
+        vbat_label_y = 120 
+        self.vbat_label.anchored_position = (vbat_label_x, vbat_label_y)
         
         # Ceate display group and add items to it
         self.group = displayio.Group()
@@ -133,9 +97,7 @@ class MeasureScreen:
         self.group.append(self.header_label)
         self.group.append(self.value_label)
         self.group.append(self.blank_label)
-        self.group.append(self.gain_label)
-        self.group.append(self.iwin_label)
-        #self.group.append(self.vbat_label)
+        self.group.append(self.vbat_label)
 
     def set_measurement(self, name, units, value):
         if units is None:
@@ -145,12 +107,24 @@ class MeasureScreen:
             self.header_label.text = name
             label_text = f'{value:1.2f} {units}'
         self.value_label.text = label_text.replace('0','O')
+        self.value_label.color = constants.COLOR_TO_RGB['white']
 
     def set_absorbance(self, absorbance):
         self.set_measurement('Absorbance', None, absorbance)
 
     def set_transmittance(self, transmittance):
         self.set_measurement('Transmittance', None, transmittance)
+
+    def set_measurement_overflow(self, name):
+        self.header_label.text = name
+        self.value_label.text = 'overflow' 
+        self.value_label.color = constants.COLOR_TO_RGB['red']
+
+    def set_absorbance_overflow(self):
+        self.set_measurement_overflow('Absorbance')
+
+    def set_transmittance_overflow(self):
+        self.set_measurement_overflow('Transmittance')
 
     def set_not_blanked(self):
         self.blank_label.text = ' not blanked'
@@ -161,8 +135,11 @@ class MeasureScreen:
     def set_blanked(self):
         self.blank_label.text = '           '
 
-    def set_vbat(self, value):
-        self.vbat_label.text = f'bat {value:1.1f}V'
+    def set_bat(self, value):
+        percent_str = f'{value}%'
+        percent_pad = ' '*(4 - len(percent_str))
+        battery_str = f'battery {percent_pad}{percent_str}'
+        self.vbat_label.text = battery_str 
 
     def show(self):
         board.DISPLAY.show(self.group)

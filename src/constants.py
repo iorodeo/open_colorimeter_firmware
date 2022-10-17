@@ -21,7 +21,7 @@ BUTTON = {
 
 COLOR_TO_RGB = collections.OrderedDict({ 
     'black'  : 0x000000, 
-    'gray'   : 0x9f9f9f, 
+    'gray'   : 0x7f7f7f, 
     'red'    : 0xff0000, 
     'green'  : 0x00ff00,
     'blue'   : 0x0000ff,
@@ -29,6 +29,7 @@ COLOR_TO_RGB = collections.OrderedDict({
     'orange' : 0xffb447
     })
 
-SPLASHSCREEN_BMP = 'splashscreen.bmp'
+SPLASHSCREEN_BMP = '/assets/splashscreen.bmp'
+CALIBRATIONS_FILE = '/calibrations.json'
 
 BATTERY_AIN_PIN = board.A6

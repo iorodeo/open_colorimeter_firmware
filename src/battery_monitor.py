@@ -4,20 +4,36 @@ import constants
 
 class BatteryMonitor:
 
+    VOLT_MAX = 4.2
+    VOLT_MIN = 3.5
+    VOLT_RNG = VOLT_MAX - VOLT_MIN
+    VOLT_NUM_INIT = 20
+    FREQ_CUTOFF = 0.02
+
     def __init__(self):
         self.battery_ain = analogio.AnalogIn(constants.BATTERY_AIN_PIN) 
         self.lowpass = None
 
+
     def update(self):
-        voltage = 2.0*ain_to_volt(self.battery_ain.value)
         if self.lowpass is None:
             self.lowpass = LowpassFilter(
-                    freq_cutoff = 0.1, 
-                    value = voltage, 
+                    freq_cutoff = self.FREQ_CUTOFF, 
+                    value = self.raw_voltage,  
                     dt = constants.LOOP_DT
                     )
+            for i in range(self.VOLT_NUM_INIT):
+                self.lowpass.update(self.raw_voltage)
         else:
-            self.lowpass.update(voltage)
+            self.lowpass.update(self.raw_voltage)
+
+    @property
+    def percent(self):
+        return int(100*self.fraction)
+
+    @property
+    def fraction(self):
+        return (self.lowpass.value - self.VOLT_MIN)/self.VOLT_RNG
 
     @property
     def voltage(self):
@@ -25,6 +41,10 @@ class BatteryMonitor:
             return 0.0
         else:
             return self.lowpass.value
+
+    @property
+    def raw_voltage(self):
+       return 2.0*ain_to_volt(self.battery_ain.value)
 
 
 class LowpassFilter:

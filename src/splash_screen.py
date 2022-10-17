@@ -5,7 +5,7 @@ import constants
 class SplashScreen:
 
     def __init__(self):
-        filename = f'/assets/{constants.SPLASHSCREEN_BMP}'
+        filename = f'{constants.SPLASHSCREEN_BMP}'
         self.bitmap = displayio.OnDiskBitmap(filename)
         self.tile_grid = displayio.TileGrid(
                 self.bitmap, 
