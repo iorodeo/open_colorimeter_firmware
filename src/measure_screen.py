@@ -1,6 +1,5 @@
 import board
 import displayio
-import terminalio
 import constants
 import fonts
 from adafruit_display_text import label
@@ -77,19 +76,20 @@ class MeasureScreen:
         self.blank_label.anchored_position = (blank_label_x, blank_label_y)
 
         # Create integration time/window text label
-        vbat_str = 'battery 100%'
+        #bat_str = 'battery 100%'
+        bat_str = 'battery 0.0V'
         text_color = constants.COLOR_TO_RGB['gray']
-        self.vbat_label = label.Label(
+        self.bat_label = label.Label(
                 fonts.font_10pt, 
-                text = vbat_str, 
+                text = bat_str, 
                 color = text_color, 
                 scale = font_scale,
                 anchor_point = (0.5,1.0),
                 )
-        bbox = self.vbat_label.bounding_box
-        vbat_label_x = board.DISPLAY.width//2 
-        vbat_label_y = 120 
-        self.vbat_label.anchored_position = (vbat_label_x, vbat_label_y)
+        bbox = self.bat_label.bounding_box
+        bat_label_x = board.DISPLAY.width//2 
+        bat_label_y = 120 
+        self.bat_label.anchored_position = (bat_label_x, bat_label_y)
         
         # Ceate display group and add items to it
         self.group = displayio.Group()
@@ -97,7 +97,7 @@ class MeasureScreen:
         self.group.append(self.header_label)
         self.group.append(self.value_label)
         self.group.append(self.blank_label)
-        self.group.append(self.vbat_label)
+        self.group.append(self.bat_label)
 
     def set_measurement(self, name, units, value):
         if units is None:
@@ -136,10 +136,11 @@ class MeasureScreen:
         self.blank_label.text = '           '
 
     def set_bat(self, value):
-        percent_str = f'{value}%'
-        percent_pad = ' '*(4 - len(percent_str))
-        battery_str = f'battery {percent_pad}{percent_str}'
-        self.vbat_label.text = battery_str 
+        self.bat_label.text = f'battery {value:1.1f}V'
+        #percent_str = f'{value}%'
+        #percent_pad = ' '*(4 - len(percent_str))
+        #battery_str = f'battery {percent_pad}{percent_str}'
+        #self.bat_label.text = battery_str 
 
     def show(self):
         board.DISPLAY.show(self.group)

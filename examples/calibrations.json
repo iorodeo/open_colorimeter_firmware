@@ -1,11 +1,10 @@
-
 { 
     "FD&C Blue1" : {
         "units"    : "mg/L", 
         "fit_type" : "linear",
-        "fit_coef" : [1.0, 0.0], 
+        "fit_coef" : [1.0, 0.0],  
         "range"    : {"min": 0.0, "max": 30.0}, 
-        "led"      : 630 
+        "led"      : 630
         }, 
     "Ammonnia" : {
         "units"    : "ppm", 

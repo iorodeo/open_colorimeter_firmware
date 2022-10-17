@@ -1,3 +1,4 @@
+import os
 import time
 import ulab
 import json
@@ -10,9 +11,10 @@ import dummy_cal
 
 from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
-
 from battery_monitor import BatteryMonitor
+
 from menu_screen import MenuScreen
+from error_screen import ErrorScreen
 from measure_screen import MeasureScreen
 
 class Mode:
@@ -28,6 +30,7 @@ class Colorimeter:
         # Create screens
         board.DISPLAY.brightness = 1.0
         self.measure_screen = MeasureScreen()
+        self.error_screen = ErrorScreen()
         self.menu_screen = MenuScreen()
 
         # Setup gamepad inputs - change this (Keypad shift??)
@@ -57,13 +60,14 @@ class Colorimeter:
 
     def load_calibrations(self):
         self.calibrations = {}
-        try:
-            with open(constants.CALIBRATIONS_FILE,'r') as f:
-                self.calibrations = json.load(f)
-        except OSError:
-            # TODO: need to create some sort of temporary error 
-            # screen for when 
-            pass
+        if constants.CALIBRATIONS_FILE in os.listdir():
+            try:
+                with open(constants.CALIBRATIONS_FILE,'r') as f:
+                    self.calibrations = json.load(f)
+            except (OSError, ValueError) as error:
+                # TODO: need to create some sort of temporary error screen 
+                # for when we can't parse file
+                pass
 
     @property
     def num_menu_items(self):
@@ -163,23 +167,18 @@ class Colorimeter:
     def run(self):
 
         while True:
-
             self.handle_button_press()
-
             if self.mode == Mode.MEASURE:
-
                 if self.measurement == 'Absorbance':
                     try:
                         self.measure_screen.set_absorbance(self.absorbance)
                     except LightSensorOverflow:
                         self.measure_screen.set_absorbance_overflow()
-
                 elif self.measurement == 'Transmittance':
                     try:
                         self.measure_screen.set_transmittance(self.transmittance)
                     except LightSensorOverflow:
                         self.measure_screen.set_transmittance_overflow()
-
                 else:
                     name = self.measurement
                     units = self.calibrations[self.measurement]['units']
@@ -187,7 +186,9 @@ class Colorimeter:
                     self.measure_screen.set_measurement(name, units, value)
 
                 self.battery_monitor.update()
-                self.measure_screen.set_bat(self.battery_monitor.percent)
+                self.measure_screen.set_bat(self.battery_monitor.voltage_lowpass)
+                #self.measure_screen.set_bat(self.battery_monitor.percent)
+                #print(f'{self.battery_monitor.voltage_raw} {self.battery_monitor.voltage_lowpass} {self.battery_monitor.fraction}')
                 self.measure_screen.show()
 
             elif self.mode == Mode.MENU:

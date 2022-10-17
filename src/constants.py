@@ -29,7 +29,7 @@ COLOR_TO_RGB = collections.OrderedDict({
     'orange' : 0xffb447
     })
 
-SPLASHSCREEN_BMP = '/assets/splashscreen.bmp'
-CALIBRATIONS_FILE = '/calibrations.json'
+SPLASHSCREEN_BMP = 'assets/splashscreen.bmp'
+CALIBRATIONS_FILE = 'calibrations.json'
 
 BATTERY_AIN_PIN = board.A6
