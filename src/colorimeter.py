@@ -20,6 +20,7 @@ from measure_screen import MeasureScreen
 class Mode:
     MEASURE = 0
     MENU    = 1
+    ERROR   = 2
 
 class Colorimeter:
 
@@ -42,10 +43,10 @@ class Colorimeter:
                 )
 
         # Load calibrations and populae menu items
+        self.mode = Mode.MEASURE
         self.load_calibrations()
         self.menu_items = ['Absorbance', 'Transmittance']
         self.menu_items.extend([k for k in self.calibrations])
-        self.mode = Mode.MEASURE
         self.menu_view_pos = 0
         self.menu_item_pos = 0
         self.measurement = self.menu_items[0] 
@@ -65,9 +66,8 @@ class Colorimeter:
                 with open(constants.CALIBRATIONS_FILE,'r') as f:
                     self.calibrations = json.load(f)
             except (OSError, ValueError) as error:
-                # TODO: need to create some sort of temporary error screen 
-                # for when we can't parse file
-                pass
+                self.error_screen.set_message('Unable to read calibration.json.')
+                self.mode = Mode.ERROR
 
     @property
     def num_menu_items(self):
@@ -124,8 +124,11 @@ class Colorimeter:
         self.blank_value = ulab.numpy.median(blank_samples)
 
     def handle_button_press(self):
+
         buttons = self.pad.get_pressed()
         if buttons:
+
+            # Check debounce timeout has passed
             if not self.check_debounce():
                 return 
             else:
@@ -152,6 +155,9 @@ class Colorimeter:
                     self.measurement = self.menu_items[self.menu_item_pos]
                     self.mode = Mode.MEASURE
                 self.update_menu_screen()
+
+            elif self.mode == Mode.ERROR:
+                self.mode = Mode.MEASURE
 
     def check_debounce(self):
         button_dt = time.monotonic() - self.last_button_press
@@ -193,6 +199,9 @@ class Colorimeter:
 
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
+
+            elif self.mode == Mode.ERROR:
+                self.error_screen.show()
 
             time.sleep(constants.LOOP_DT)
 
