@@ -50,7 +50,6 @@ class ErrorScreen:
         # Create error message labels
         self.error_label_list = []
         error_label_y = header_label_y + self.SPACING_MESSAGE_LABEL
-        print(error_label_y)
         for i in range(self.NUM_ERROR_LABEL): 
             error_message_str = ' '*self.MESSAGE_MAX_CHARS
             text_color = constants.COLOR_TO_RGB['orange']
@@ -64,7 +63,6 @@ class ErrorScreen:
             bbox = error_label.bounding_box
             error_label_x = board.DISPLAY.width//2
             error_label_y += self.HEIGHT_MESSAGE_LABEL + self.SPACING_MESSAGE_LABEL 
-            print(error_label_y)
             error_label.anchored_position = (error_label_x, error_label_y)
             self.error_label_list.append(error_label)
         
@@ -78,8 +76,6 @@ class ErrorScreen:
     def set_message(self, message):
         message_extended = f'{message} Press any key to continue.'
         wrapped_message = wrap_text_to_lines(message_extended, self.MESSAGE_MAX_CHARS) 
-        for item in wrapped_message:
-            print(f'{len(item)}, {item}')
         for error_label, line in zip(self.error_label_list, wrapped_message):
             error_label.text = line  
 

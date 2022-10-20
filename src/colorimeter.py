@@ -44,12 +44,13 @@ class Colorimeter:
 
         # Load calibrations and populae menu items
         self.mode = Mode.MEASURE
+        self.calibrations = {}
         self.load_calibrations()
         self.menu_items = ['Absorbance', 'Transmittance']
         self.menu_items.extend([k for k in self.calibrations])
         self.menu_view_pos = 0
         self.menu_item_pos = 0
-        self.measurement = self.menu_items[0] 
+        self.measurement_name = self.menu_items[0] 
 
         # Setup light sensor and blanking data 
         self.light_sensor = LightSensor()
@@ -58,7 +59,6 @@ class Colorimeter:
         self.measure_screen.set_not_blanked()
         self.is_blanked = False
 
-
     def load_calibrations(self):
         self.calibrations = {}
         if constants.CALIBRATIONS_FILE in os.listdir():
@@ -66,8 +66,13 @@ class Colorimeter:
                 with open(constants.CALIBRATIONS_FILE,'r') as f:
                     self.calibrations = json.load(f)
             except (OSError, ValueError) as error:
-                self.error_screen.set_message('Unable to read calibration.json.')
+                error_message = 'Unable to read calibration.json.'
+                self.error_screen.set_message(error_message)
                 self.mode = Mode.ERROR
+        self.check_calibrations()
+
+    def check_calibrations(self):
+        pass
 
     @property
     def num_menu_items(self):
@@ -102,6 +107,14 @@ class Colorimeter:
         self.menu_screen.set_curr_item(pos)
 
     @property
+    def measurement_units(self):
+        if self.measurement_name in ('Absorbance', 'Transmittance'):
+            units = None 
+        else:
+            units = self.calibrations[self.measurement_name]['units']
+        return units
+
+    @property
     def transmittance(self):
         transmittance = self.light_sensor.value/self.blank_value
         return transmittance
@@ -111,6 +124,36 @@ class Colorimeter:
         absorbance = -ulab.numpy.log10(self.transmittance)
         absorbance = absorbance if absorbance > 0.0 else 0.0
         return absorbance
+
+    @property
+    def measurement_value(self):
+        if self.measurement_name == 'Transmittance':
+            value = self.transmittance
+        elif self.measurement_name == 'Absorbance':
+            value = self.absorbance
+        else:
+            calibration = self.calibrations[self.measurement_name]
+            fit_type = calibration['fit_type']
+            fit_coef = calibration['fit_coef']
+            if fit_type in ('linear', 'polynomial'):
+                absorbance = self.absorbance
+                try:
+                    range_min = calibration['range']['min']
+                    range_max = calibration['range']['max']
+                except KeyError:
+                    pass
+                else:
+                    if absorbance >= range_min and absorbance <= range_max:
+                        value = ulab.numpy.polyval(fit_coef, [absorbance])[0]
+                    else:
+                        value = None # out of range
+            else:
+                error_message = f'{fit_type} fit type not implemented'
+                self.error_screen.set_message(error_message)
+                self.measurement_name = 'Absorbance'
+                self.mode = Mode.ERROR
+                value = 0.0
+        return value
 
     def blank_sensor(self):
         blank_samples = ulab.numpy.zeros((constants.NUM_BLANK_SAMPLES,))
@@ -123,11 +166,13 @@ class Colorimeter:
             time.sleep(constants.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
 
+    def apply_calibration(self):
+        pass
+
     def handle_button_press(self):
 
         buttons = self.pad.get_pressed()
         if buttons:
-
             # Check debounce timeout has passed
             if not self.check_debounce():
                 return 
@@ -152,12 +197,13 @@ class Colorimeter:
                 elif buttons & constants.BUTTON['menu_down']:
                     self.incr_menu_item_pos()
                 elif buttons & constants.BUTTON['menu_right']:
-                    self.measurement = self.menu_items[self.menu_item_pos]
+                    self.measurement_name = self.menu_items[self.menu_item_pos]
                     self.mode = Mode.MEASURE
                 self.update_menu_screen()
 
             elif self.mode == Mode.ERROR:
                 self.mode = Mode.MEASURE
+
 
     def check_debounce(self):
         button_dt = time.monotonic() - self.last_button_press
@@ -166,35 +212,22 @@ class Colorimeter:
         else:
             return True
 
-    def print_button_info(self, buttons):
-        buttons_to_name = {v:k for k,v in constants.BUTTON.items()}
-        print(buttons_to_name[buttons], self.mode)
-
     def run(self):
-
         while True:
             self.handle_button_press()
             if self.mode == Mode.MEASURE:
-                if self.measurement == 'Absorbance':
-                    try:
-                        self.measure_screen.set_absorbance(self.absorbance)
-                    except LightSensorOverflow:
-                        self.measure_screen.set_absorbance_overflow()
-                elif self.measurement == 'Transmittance':
-                    try:
-                        self.measure_screen.set_transmittance(self.transmittance)
-                    except LightSensorOverflow:
-                        self.measure_screen.set_transmittance_overflow()
-                else:
-                    name = self.measurement
-                    units = self.calibrations[self.measurement]['units']
-                    value = 0.0
-                    self.measure_screen.set_measurement(name, units, value)
+                try:
+                    self.measure_screen.set_measurement(
+                            self.measurement_name, 
+                            self.measurement_units, 
+                            self.measurement_value
+                            )
+                except LightSensorOverflow:
+                    self.measure_screen.set_overflow(self.measurement_name)
 
                 self.battery_monitor.update()
-                self.measure_screen.set_bat(self.battery_monitor.voltage_lowpass)
-                #self.measure_screen.set_bat(self.battery_monitor.percent)
-                #print(f'{self.battery_monitor.voltage_raw} {self.battery_monitor.voltage_lowpass} {self.battery_monitor.fraction}')
+                battery_voltage = self.battery_monitor.voltage_lowpass
+                self.measure_screen.set_bat(battery_voltage)
                 self.measure_screen.show()
 
             elif self.mode == Mode.MENU:

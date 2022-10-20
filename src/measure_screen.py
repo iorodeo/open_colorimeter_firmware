@@ -100,31 +100,23 @@ class MeasureScreen:
         self.group.append(self.bat_label)
 
     def set_measurement(self, name, units, value):
-        if units is None:
-            self.header_label.text = name
-            label_text = f'{value:1.2f}'
+        if value is None:
+            self.value_label.color = constants.COLOR_TO_RGB['orange']
+            self.value_label.text = 'out of range' 
         else:
-            self.header_label.text = name
-            label_text = f'{value:1.2f} {units}'
-        self.value_label.text = label_text.replace('0','O')
-        self.value_label.color = constants.COLOR_TO_RGB['white']
+            if units is None:
+                self.header_label.text = name
+                label_text = f'{value:1.2f}'
+            else:
+                self.header_label.text = name
+                label_text = f'{value:1.2f} {units}'
+            self.value_label.text = label_text.replace('0','O')
+            self.value_label.color = constants.COLOR_TO_RGB['white']
 
-    def set_absorbance(self, absorbance):
-        self.set_measurement('Absorbance', None, absorbance)
-
-    def set_transmittance(self, transmittance):
-        self.set_measurement('Transmittance', None, transmittance)
-
-    def set_measurement_overflow(self, name):
+    def set_overflow(self, name):
         self.header_label.text = name
         self.value_label.text = 'overflow' 
         self.value_label.color = constants.COLOR_TO_RGB['red']
-
-    def set_absorbance_overflow(self):
-        self.set_measurement_overflow('Absorbance')
-
-    def set_transmittance_overflow(self):
-        self.set_measurement_overflow('Transmittance')
 
     def set_not_blanked(self):
         self.blank_label.text = ' not blanked'
@@ -137,10 +129,6 @@ class MeasureScreen:
 
     def set_bat(self, value):
         self.bat_label.text = f'battery {value:1.1f}V'
-        #percent_str = f'{value}%'
-        #percent_pad = ' '*(4 - len(percent_str))
-        #battery_str = f'battery {percent_pad}{percent_str}'
-        #self.bat_label.text = battery_str 
 
     def show(self):
         board.DISPLAY.show(self.group)

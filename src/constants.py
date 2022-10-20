@@ -3,7 +3,7 @@ import collections
 
 LOOP_DT = 0.1
 BLANK_DT = 0.05
-DEBOUNCE_DT = 0.5 
+DEBOUNCE_DT = 0.6 
 
 NUM_BLANK_SAMPLES = 50 
 

@@ -68,7 +68,7 @@ class MenuScreen:
             pos_y = menu_line_y0 + (i+1)*label_dy 
             label_tmp = label.Label(
                      fonts.font_10pt,
-                     text = f'{i}: substance',
+                     text = '',
                      color = constants.COLOR_TO_RGB['white'],
                      scale = font_scale,
                      anchor_point = (0.0, 1.0),

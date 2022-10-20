@@ -4,9 +4,6 @@ import ulab.numpy as np
 
 class BatteryMonitor:
 
-    VOLT_MAX = 3.9
-    VOLT_MIN = 3.5
-    VOLT_RNG = VOLT_MAX - VOLT_MIN
     VOLT_NUM_INIT = 5 
     FREQ_CUTOFF = 0.02
 
@@ -29,16 +26,6 @@ class BatteryMonitor:
         else:
             # Update filter on new reading
             self.lowpass.update(self.voltage_raw)
-
-    @property
-    def percent(self):
-        return int(100*self.fraction)
-
-    @property
-    def fraction(self):
-        value = (self.voltage_lowpass - self.VOLT_MIN)/self.VOLT_RNG 
-        value = np.clip(value, 0.0, 1.0)
-        return value
 
     @property
     def voltage_lowpass(self):

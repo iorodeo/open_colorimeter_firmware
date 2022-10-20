@@ -9,14 +9,14 @@
     "Ammonnia" : {
         "units"    : "ppm", 
         "fit_type" : "linear",
-        "fit_coef" : [1.0, 0.0], 
-        "range"    : {"min": 0.0, "max": 8.0},
+        "fit_coef" : [3.0, 0.0], 
+        "range"    : {"min": 0.0, "max": 0.8},
         "led"      : 630 
         },
     "Nitrate" : {
         "units"     : "ppm", 
         "fit_type"  : "linear" ,
-        "fit_coef"  : [1.0, 0.0], 
+        "fit_coef"  : [2.0, 0.0], 
         "range"     : {"min": 0.0, "max": 200.0},
         "led"       : 520 
         },
