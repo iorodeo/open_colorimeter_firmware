@@ -1,0 +1,16 @@
+{ 
+    "Test1" : {
+        "units"    : "mg/L", 
+        "fit_type" : "linear",
+        "fit_coef" : [1.0, 0.0],  
+        "range"    : {"min": 0.0, "max": 1.5}, 
+        "led"      : 630
+        }, 
+    "Test2" : {
+        "units"    : "ppm", 
+        "fit_type" : "linear",
+        "fit_coef" : [1.0, 0.0], 
+        "range"    : {"min": 0.0, "max": 2.0},
+        "led"      : 630 
+        }
+}

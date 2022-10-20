@@ -9,6 +9,8 @@ import gamepadshift
 import constants
 import dummy_cal
 
+from collections import OrderedDict
+
 from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
 from battery_monitor import BatteryMonitor
@@ -42,7 +44,7 @@ class Colorimeter:
                 digitalio.DigitalInOut(board.BUTTON_LATCH),
                 )
 
-        # Load calibrations and populae menu items
+        # Load calibrations and populate menu items
         self.mode = Mode.MEASURE
         self.calibrations = {}
         self.load_calibrations()
@@ -64,15 +66,20 @@ class Colorimeter:
         if constants.CALIBRATIONS_FILE in os.listdir():
             try:
                 with open(constants.CALIBRATIONS_FILE,'r') as f:
-                    self.calibrations = json.load(f)
+                    calibrations = json.load(f)
             except (OSError, ValueError) as error:
                 error_message = 'Unable to read calibration.json.'
                 self.error_screen.set_message(error_message)
                 self.mode = Mode.ERROR
-        self.check_calibrations()
+            else:
+                calibration_tuples = [(k,v) for (k,v) in calibrations.items()]
+                calibration_tuples.sort()
+                self.calibrations = OrderedDict(calibration_tuples) 
+                self.check_calibrations()
 
     def check_calibrations(self):
-        pass
+        for name, data in self.calibrations.items():
+            pass
 
     @property
     def num_menu_items(self):
@@ -166,11 +173,7 @@ class Colorimeter:
             time.sleep(constants.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
 
-    def apply_calibration(self):
-        pass
-
     def handle_button_press(self):
-
         buttons = self.pad.get_pressed()
         if buttons:
             # Check debounce timeout has passed
@@ -224,17 +227,13 @@ class Colorimeter:
                             )
                 except LightSensorOverflow:
                     self.measure_screen.set_overflow(self.measurement_name)
-
                 self.battery_monitor.update()
                 battery_voltage = self.battery_monitor.voltage_lowpass
                 self.measure_screen.set_bat(battery_voltage)
                 self.measure_screen.show()
-
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
-
             elif self.mode == Mode.ERROR:
                 self.error_screen.show()
-
             time.sleep(constants.LOOP_DT)
 

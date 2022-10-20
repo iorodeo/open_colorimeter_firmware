@@ -102,7 +102,7 @@ class MeasureScreen:
     def set_measurement(self, name, units, value):
         if value is None:
             self.value_label.color = constants.COLOR_TO_RGB['orange']
-            self.value_label.text = 'out of range' 
+            self.value_label.text = 'range error' 
         else:
             if units is None:
                 self.header_label.text = name

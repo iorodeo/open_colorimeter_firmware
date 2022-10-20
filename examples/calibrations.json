@@ -10,7 +10,7 @@
         "units"    : "ppm", 
         "fit_type" : "linear",
         "fit_coef" : [3.0, 0.0], 
-        "range"    : {"min": 0.0, "max": 0.8},
+        "range"    : {"min": 0.0, "max": 0.35},
         "led"      : 630 
         },
     "Nitrate" : {
