@@ -180,7 +180,6 @@ class Colorimeter:
             elif self.mode == Mode.ERROR:
                 if self.calibrations.has_errors:
                     error_msg = self.calibrations.pop_error()
-                    print(error_msg)
                     self.error_screen.set_message(error_msg)
                     self.mode = Mode.ERROR
                 else:
