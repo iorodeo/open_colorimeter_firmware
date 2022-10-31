@@ -14,6 +14,7 @@ class LightSensor:
         self._device = adafruit_tsl2591.TSL2591(i2c)
         self.gain = adafruit_tsl2591.GAIN_MED
         self.integration_time = adafruit_tsl2591.INTEGRATIONTIME_100MS
+        #self.integration_time = adafruit_tsl2591.INTEGRATIONTIME_200MS
         self.channel = 0
 
     @property

@@ -1,19 +1,15 @@
-import os
 import time
 import ulab
-import json
 import board
 import analogio
 import digitalio
 import gamepadshift
 import constants
-import dummy_cal
-
-from collections import OrderedDict
 
 from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
 from battery_monitor import BatteryMonitor
+from calibrations import Calibrations
 
 from menu_screen import MenuScreen
 from error_screen import ErrorScreen
@@ -46,10 +42,10 @@ class Colorimeter:
 
         # Load calibrations and populate menu items
         self.mode = Mode.MEASURE
-        self.calibrations = {}
-        self.load_calibrations()
+        self.calibrations = Calibrations()
+        self.calibrations.load()
         self.menu_items = ['Absorbance', 'Transmittance']
-        self.menu_items.extend([k for k in self.calibrations])
+        self.menu_items.extend([k for k in self.calibrations.data])
         self.menu_view_pos = 0
         self.menu_item_pos = 0
         self.measurement_name = self.menu_items[0] 
@@ -60,26 +56,6 @@ class Colorimeter:
         self.blank_sensor()
         self.measure_screen.set_not_blanked()
         self.is_blanked = False
-
-    def load_calibrations(self):
-        self.calibrations = {}
-        if constants.CALIBRATIONS_FILE in os.listdir():
-            try:
-                with open(constants.CALIBRATIONS_FILE,'r') as f:
-                    calibrations = json.load(f)
-            except (OSError, ValueError) as error:
-                error_message = 'Unable to read calibration.json.'
-                self.error_screen.set_message(error_message)
-                self.mode = Mode.ERROR
-            else:
-                calibration_tuples = [(k,v) for (k,v) in calibrations.items()]
-                calibration_tuples.sort()
-                self.calibrations = OrderedDict(calibration_tuples) 
-                self.check_calibrations()
-
-    def check_calibrations(self):
-        for name, data in self.calibrations.items():
-            pass
 
     @property
     def num_menu_items(self):
@@ -103,11 +79,11 @@ class Colorimeter:
         n1 = n0 + self.menu_screen.items_per_screen
         view_items = []
         for i, item in enumerate(self.menu_items[n0:n1]):
-            try:
-                led = self.calibrations[item]['led']
-                item_text = f'{n0+i} {item} ({led})' 
-            except KeyError:
+            led = self.calibrations.led(item)
+            if led is None:
                 item_text = f'{n0+i} {item}' 
+            else:
+                item_text = f'{n0+i} {item} ({led})' 
             view_items.append(item_text)
         self.menu_screen.set_menu_items(view_items)
         pos = self.menu_item_pos - self.menu_view_pos
@@ -118,7 +94,7 @@ class Colorimeter:
         if self.measurement_name in ('Absorbance', 'Transmittance'):
             units = None 
         else:
-            units = self.calibrations[self.measurement_name]['units']
+            units = self.calibrations.units(self.measurement_name)
         return units
 
     @property
@@ -139,27 +115,10 @@ class Colorimeter:
         elif self.measurement_name == 'Absorbance':
             value = self.absorbance
         else:
-            calibration = self.calibrations[self.measurement_name]
-            fit_type = calibration['fit_type']
-            fit_coef = calibration['fit_coef']
-            if fit_type in ('linear', 'polynomial'):
-                absorbance = self.absorbance
-                try:
-                    range_min = calibration['range']['min']
-                    range_max = calibration['range']['max']
-                except KeyError:
-                    pass
-                else:
-                    if absorbance >= range_min and absorbance <= range_max:
-                        value = ulab.numpy.polyval(fit_coef, [absorbance])[0]
-                    else:
-                        value = None # out of range
-            else:
-                error_message = f'{fit_type} fit type not implemented'
-                self.error_screen.set_message(error_message)
-                self.measurement_name = 'Absorbance'
-                self.mode = Mode.ERROR
-                value = 0.0
+            value = self.calibrations.apply(
+                    self.measurement_name, 
+                    self.absorbance
+                    )
         return value
 
     def blank_sensor(self):
