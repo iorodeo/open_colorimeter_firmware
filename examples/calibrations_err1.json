@@ -1,9 +1,9 @@
 {
   "Ammonia": {
     "units": "ppm",
-    "fit_type": "polynomial",
+    "fit_type": "bob",
     "fit_coef": [
-      0.6995225710876956,
+      "a",
       4.451756099596242,
       0.0
     ],

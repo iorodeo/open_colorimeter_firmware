@@ -74,7 +74,7 @@ class ErrorScreen:
             self.group.append(error_label)
 
     def set_message(self, message):
-        message_extended = f'{message} Press any key to continue.'
+        message_extended = f'{message}. Press any key to continue.'
         wrapped_message = wrap_text_to_lines(message_extended, self.MESSAGE_MAX_CHARS) 
         for error_label, line in zip(self.error_label_list, wrapped_message):
             error_label.text = line  
