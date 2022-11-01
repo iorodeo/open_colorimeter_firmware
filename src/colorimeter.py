@@ -151,10 +151,10 @@ class Colorimeter:
         blank_samples = ulab.numpy.zeros((constants.NUM_BLANK_SAMPLES,))
         for i in range(constants.NUM_BLANK_SAMPLES):
             try:
-                value = self.light_sensor.value
+                value = self.raw_sensor_value
             except LightSensorOverflow:
                 value = self.light_sensor.max_counts
-            blank_samples[i] = value 
+            blank_samples[i] = value
             time.sleep(constants.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
 
