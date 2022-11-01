@@ -8,8 +8,6 @@
       0.0
     ],
     "led": 595,
-    "gain": "med",
-    "integration_time": "100ms",
     "range": {
       "min": 0.0,
       "max": 1.43
@@ -24,8 +22,6 @@
       0.0
     ],
     "led": 520,
-    "gain": "med",
-    "integration_time": "100ms",
     "range": {
       "min": 0.0,
       "max": 1.39

@@ -2,26 +2,11 @@ import os
 import ulab
 import json
 import constants
-import adafruit_tsl2591
 from collections import OrderedDict
 
 class Calibrations:
 
     ALLOWED_FIT_TYPES = ['linear', 'polynomial']
-    GAIN_STR_TO_VALUE = {
-            'low'  : adafruit_tsl2591.GAIN_LOW,
-            'med'  : adafruit_tsl2591.GAIN_MED,
-            'high' : adafruit_tsl2591.GAIN_HIGH,
-            'max'  : adafruit_tsl2591.GAIN_MAX,
-            }
-    INTEGRATION_TIME_STR_TO_VALUE = {
-            '100ms': adafruit_tsl2591.INTEGRATIONTIME_100MS,
-            '200ms': adafruit_tsl2591.INTEGRATIONTIME_200MS,
-            '300ms': adafruit_tsl2591.INTEGRATIONTIME_300MS,
-            '400ms': adafruit_tsl2591.INTEGRATIONTIME_400MS,
-            '500ms': adafruit_tsl2591.INTEGRATIONTIME_500MS,
-            '600ms': adafruit_tsl2591.INTEGRATIONTIME_600MS,
-            }
 
     def __init__(self):
         self.data = {}
@@ -115,22 +100,32 @@ class Calibrations:
                 error_msg = f'range_data must be dict'
                 error_list.append(error_msg)
                 return error_list
+
+        min_value = None
         try:
-            min_value = range_data['min']
+            min_value = float(range_data['min'])
         except KeyError:
-            min_value = None
-            error_msg = f'{name} range missing min value'
+            error_msg = f'{name} range min missing'
             error_list.append(error_msg)
+        except (ValueError, TypeError): 
+            error_msg = f'{name} range min not float' 
+            error_list.append(error_msg)
+
+        max_value = None
         try:
-            max_value = range_data['max']
+            max_value = float(range_data['max'])
         except KeyError:
-            max_value = None
-            error_msg = f'{name} range missing max value'
+            error_msg = f'{name} range max missing'
+            error_list.append(error_msg)
+        except (ValueError, TypeError): 
+            error_msg = f'{name} range max not float' 
             error_list.append(error_msg)
 
         if min_value is not None and max_value is not None:
-            # TODO
-            pass
+            if min_value >= max_value:
+                error_msg = f'{name} range min > max'
+                error_list.append(error_msg)
+
         return error_list
 
 
