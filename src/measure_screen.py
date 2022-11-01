@@ -106,7 +106,10 @@ class MeasureScreen:
         else:
             if units is None:
                 self.header_label.text = name
-                label_text = f'{value:1.2f}'
+                if type(value) == float:
+                    label_text = f'{value:1.2f}'
+                else: 
+                    label_text = f'{value}'
             else:
                 self.header_label.text = name
                 label_text = f'{value:1.2f} {units}'

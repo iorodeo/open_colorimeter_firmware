@@ -24,6 +24,12 @@ class Mode:
 
 class Colorimeter:
 
+    DEFAULT_MEASUREMENTS = [
+            'Absorbance', 
+            'Transmittance', 
+            'Raw Sensor',
+            ]
+
     def __init__(self):
 
         self.battery_monitor = BatteryMonitor()
@@ -58,7 +64,7 @@ class Colorimeter:
                 self.error_screen.set_message(error_msg)
                 self.mode = Mode.ERROR
 
-        self.menu_items = ['Absorbance', 'Transmittance']
+        self.menu_items = self.DEFAULT_MEASUREMENTS 
         self.menu_items.extend([k for k in self.calibrations.data])
         self.menu_view_pos = 0
         self.menu_item_pos = 0
@@ -105,15 +111,19 @@ class Colorimeter:
 
     @property
     def measurement_units(self):
-        if self.measurement_name in ('Absorbance', 'Transmittance'):
+        if self.measurement_name in self.DEFAULT_MEASUREMENTS: 
             units = None 
         else:
             units = self.calibrations.units(self.measurement_name)
         return units
 
     @property
+    def raw_sensor_value(self):
+        return self.light_sensor.value
+
+    @property
     def transmittance(self):
-        transmittance = self.light_sensor.value/self.blank_value
+        transmittance = float(self.raw_sensor_value)/self.blank_value
         return transmittance
 
     @property
@@ -128,6 +138,8 @@ class Colorimeter:
             value = self.transmittance
         elif self.measurement_name == 'Absorbance':
             value = self.absorbance
+        elif self.measurement_name == 'Raw Sensor':
+            value = self.raw_sensor_value
         else:
             value = self.calibrations.apply(
                     self.measurement_name, 

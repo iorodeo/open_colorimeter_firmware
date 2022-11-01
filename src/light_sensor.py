@@ -33,7 +33,7 @@ class LightSensor:
         if value >= self.max_counts:
             raise LightSensorOverflow('light sensor reading > max_counts')
         #print(value)
-        return float(value)
+        return value
 
     @property
     def gain(self):
