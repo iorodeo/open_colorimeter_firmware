@@ -3,46 +3,20 @@ import ulab
 import json
 import constants
 from collections import OrderedDict
+from json_settings_file import JsonSettingsFile
 
-class Calibrations:
+class CalibrationsError(Exception):
+    pass
 
+class Calibrations(JsonSettingsFile):
+
+    FILE_TYPE = 'calibrations'
+    FILE_NAME = constants.CALIBRATIONS_FILE
+    LOAD_ERROR_EXCEPTION = CalibrationsError
     ALLOWED_FIT_TYPES = ['linear', 'polynomial']
 
     def __init__(self):
-        self.data = {}
-        self.error_dict = OrderedDict()
-
-    @property
-    def has_errors(self):
-        return bool(self.error_dict)
-    
-    def pop_error(self):
-        if self.error_dict:
-            name = next(iter(self.error_dict))
-            error_msg = self.error_dict[name].pop()
-            if not self.error_dict[name]:
-                del self.error_dict[name]
-        else:
-            error_msg = None
-        return error_msg
-
-    def load(self):
-        self.data = {}
-        if constants.CALIBRATIONS_FILE in os.listdir():
-            try:
-                with open(constants.CALIBRATIONS_FILE,'r') as f:
-                    data = json.load(f)
-            except (OSError, ValueError):
-                error_msg = f'unable to read calibrations file'
-                raise CalibrationsError(error_msg)
-            else:
-                if type(data) != dict:
-                    error_msg = f'calibrations file incorrect format'
-                    raise CalibrationsError(error_msg)
-                data_tuples = [(k,v) for (k,v) in data.items()]
-                data_tuples.sort()
-                self.data = OrderedDict(data_tuples) 
-                self.check()
+        super().__init__()
 
     def check(self):
         # Check each calibration for errors
@@ -50,7 +24,6 @@ class Calibrations:
             error_list = []
             error_list.extend(self.check_fit(name, calibration))
             error_list.extend(self.check_range(name, calibration))
-            # TODO: 
             if error_list:
                 self.error_dict[name] = error_list
 
@@ -88,6 +61,8 @@ class Calibrations:
         return error_list
 
     def check_range(self, name, calibration):
+        min_value = None
+        max_value = None
         error_list = []
         try:
             range_data = calibration['range']
@@ -101,7 +76,6 @@ class Calibrations:
                 error_list.append(error_msg)
                 return error_list
 
-        min_value = None
         try:
             min_value = float(range_data['min'])
         except KeyError:
@@ -111,7 +85,6 @@ class Calibrations:
             error_msg = f'{name} range min not float' 
             error_list.append(error_msg)
 
-        max_value = None
         try:
             max_value = float(range_data['max'])
         except KeyError:
@@ -127,8 +100,6 @@ class Calibrations:
                 error_list.append(error_msg)
 
         return error_list
-
-
 
     def led(self, name):
         try:
@@ -167,5 +138,3 @@ class Calibrations:
         return value
 
 
-class CalibrationsError(Exception):
-    pass

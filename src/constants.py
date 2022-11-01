@@ -2,14 +2,15 @@ import board
 import collections
 import adafruit_tsl2591
 
+CALIBRATIONS_FILE = 'calibrations.json'
+CONFIGURATION_FILE = 'configuration.json'
+SPLASHSCREEN_BMP = 'assets/splashscreen.bmp'
+
 LOOP_DT = 0.1
 BLANK_DT = 0.05
 DEBOUNCE_DT = 0.6 
 NUM_BLANK_SAMPLES = 50 
-
 BATTERY_AIN_PIN = board.A6
-SPLASHSCREEN_BMP = 'assets/splashscreen.bmp'
-CALIBRATIONS_FILE = 'calibrations.json'
 
 BUTTON = { 
         'no button'   : 0b00000000,
@@ -33,14 +34,14 @@ COLOR_TO_RGB = collections.OrderedDict([
     ('orange' , 0xffb447),
     ])
 
-GAIN_STR_TO_VALUE = collections.OrderedDict([
+GAIN_STR_TO_SETTING = collections.OrderedDict([
         ('low'  , adafruit_tsl2591.GAIN_LOW ),
         ('med'  , adafruit_tsl2591.GAIN_MED ),
         ('high' , adafruit_tsl2591.GAIN_HIGH),
         ('max'  , adafruit_tsl2591.GAIN_MAX ),
         ])
 
-INTEGRATION_TIME_STR_TO_VALUE = collections.OrderedDict([
+INTEGRATION_TIME_STR_TO_SETTING = collections.OrderedDict([
         ('100ms', adafruit_tsl2591.INTEGRATIONTIME_100MS),
         ('200ms', adafruit_tsl2591.INTEGRATIONTIME_200MS),
         ('300ms', adafruit_tsl2591.INTEGRATIONTIME_300MS),
