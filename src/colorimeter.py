@@ -24,11 +24,10 @@ class Mode:
 
 class Colorimeter:
 
-    DEFAULT_MEASUREMENTS = [
-            'Absorbance', 
-            'Transmittance', 
-            'Raw Sensor',
-            ]
+    RAW_SENSOR_STR = 'Raw Sensor' 
+    ABSORBANCE_STR = 'Absorbance'
+    TRANSMITTANCE_STR = 'Transmittance'
+    DEFAULT_MEASUREMENTS = [ABSORBANCE_STR, TRANSMITTANCE_STR, RAW_SENSOR_STR]
 
     def __init__(self):
 
@@ -47,6 +46,8 @@ class Colorimeter:
                 digitalio.DigitalInOut(board.BUTTON_OUT),
                 digitalio.DigitalInOut(board.BUTTON_LATCH),
                 )
+
+        # TODO: Load Configuration
 
         # Load calibrations and populate menu items
         self.mode = Mode.MEASURE
@@ -110,6 +111,18 @@ class Colorimeter:
         self.menu_screen.set_curr_item(pos)
 
     @property
+    def is_absorbance(self):
+        return self.measurement_name == self.ABSORBANCE_STR
+
+    @property
+    def is_transmittance(self):
+        return self.measurement_name == self.TRANSMITTANCE_STR
+
+    @property
+    def is_raw_sensor(self):
+        return self.measurement_name == self.RAW_SENSOR_STR
+
+    @property
     def measurement_units(self):
         if self.measurement_name in self.DEFAULT_MEASUREMENTS: 
             units = None 
@@ -134,11 +147,11 @@ class Colorimeter:
 
     @property
     def measurement_value(self):
-        if self.measurement_name == 'Transmittance':
-            value = self.transmittance
-        elif self.measurement_name == 'Absorbance':
+        if self.is_absorbance: 
             value = self.absorbance
-        elif self.measurement_name == 'Raw Sensor':
+        elif self.is_transmittance:
+            value = self.transmittance
+        elif self.is_raw_sensor:
             value = self.raw_sensor_value
         else:
             value = self.calibrations.apply(
@@ -157,45 +170,68 @@ class Colorimeter:
             blank_samples[i] = value
             time.sleep(constants.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
+        self.is_blanked = True
+
+    def blank_button_pressed(self, buttons):  
+        if self.is_raw_sensor:
+            return False
+        else:
+            return buttons & constants.BUTTON['blank']
+
+    def menu_button_pressed(self, buttons): 
+        return buttons & constants.BUTTON['menu']
+
+    def up_button_pressed(self, buttons):
+        return buttons & constants.BUTTON['up']
+
+    def down_button_pressed(self, buttons):
+        return buttons & constants.BUTTON['down']
+
+    def right_button_pressed(self, buttons):
+        return buttons & constants.BUTTON['right']
 
     def handle_button_press(self):
         buttons = self.pad.get_pressed()
-        if buttons:
-            # Check debounce timeout has passed
-            if not self.check_debounce():
-                return 
-            else:
-                self.last_button_press = time.monotonic()
+        if not buttons:
+            # No buttons pressed
+            return 
+        if not self.check_debounce():
+            # Still within debounce timeout
+            return  
 
-            if self.mode == Mode.MEASURE:
-                if buttons & constants.BUTTON['blank']:
-                    self.measure_screen.set_blanking()
-                    self.blank_sensor()
-                    self.measure_screen.set_blanked()
-                elif buttons & constants.BUTTON['menu_toggle']:
-                    self.mode = Mode.MENU
-                    self.menu_item_pos = 0
-                    self.update_menu_screen()
+        # Get time of last button press for debounce check
+        self.last_button_press = time.monotonic()
 
-            elif self.mode == Mode.MENU:
-                if buttons & constants.BUTTON['menu_toggle']:
-                    self.mode = Mode.MEASURE
-                elif buttons & constants.BUTTON['menu_up']:
-                    self.decr_menu_item_pos()
-                elif buttons & constants.BUTTON['menu_down']:
-                    self.incr_menu_item_pos()
-                elif buttons & constants.BUTTON['menu_right']:
-                    self.measurement_name = self.menu_items[self.menu_item_pos]
-                    self.mode = Mode.MEASURE
+        # Update state of system based on buttons pressed.
+        # This is different for each operating mode. 
+        if self.mode == Mode.MEASURE:
+            if self.blank_button_pressed(buttons):
+                self.measure_screen.set_blanking()
+                self.blank_sensor()
+            elif self.menu_button_pressed(buttons):
+                self.mode = Mode.MENU
+                self.menu_item_pos = 0
                 self.update_menu_screen()
 
-            elif self.mode == Mode.ERROR:
-                if self.calibrations.has_errors:
-                    error_msg = self.calibrations.pop_error()
-                    self.error_screen.set_message(error_msg)
-                    self.mode = Mode.ERROR
-                else:
-                    self.mode = Mode.MEASURE
+        elif self.mode == Mode.MENU:
+            if self.menu_button_pressed(buttons):
+                self.mode = Mode.MEASURE
+            elif self.up_button_pressed(buttons): 
+                self.decr_menu_item_pos()
+            elif self.down_button_pressed(buttons): 
+                self.incr_menu_item_pos()
+            elif self.right_button_pressed(buttons): 
+                self.measurement_name = self.menu_items[self.menu_item_pos]
+                self.mode = Mode.MEASURE
+            self.update_menu_screen()
+
+        elif self.mode == Mode.ERROR:
+            if self.calibrations.has_errors:
+                error_msg = self.calibrations.pop_error()
+                self.error_screen.set_message(error_msg)
+                self.mode = Mode.ERROR
+            else:
+                self.mode = Mode.MEASURE
 
     def check_debounce(self):
         button_dt = time.monotonic() - self.last_button_press
@@ -205,9 +241,16 @@ class Colorimeter:
             return True
 
     def run(self):
+
         while True:
+
+            # Deal with any button presses
             self.handle_button_press()
+
+            # Update display based on the current operating mode
             if self.mode == Mode.MEASURE:
+
+                # Get measurement and result to measurment screen
                 try:
                     self.measure_screen.set_measurement(
                             self.measurement_name, 
@@ -216,13 +259,28 @@ class Colorimeter:
                             )
                 except LightSensorOverflow:
                     self.measure_screen.set_overflow(self.measurement_name)
+
+                # Display whether or not we have blanking data. Not relevant
+                # when device is displaying raw sensor data
+                if self.is_blanked or self.is_raw_sensor: 
+                    self.measure_screen.set_blanked()
+                else:
+                    self.measure_screen.set_not_blanked()
+
+                # Update and display measurement of battery voltage
                 self.battery_monitor.update()
                 battery_voltage = self.battery_monitor.voltage_lowpass
                 self.measure_screen.set_bat(battery_voltage)
+
                 self.measure_screen.show()
+
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
+
             elif self.mode == Mode.ERROR:
                 self.error_screen.show()
+
             time.sleep(constants.LOOP_DT)
+
+
 

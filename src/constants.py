@@ -13,15 +13,15 @@ NUM_BLANK_SAMPLES = 50
 BATTERY_AIN_PIN = board.A6
 
 BUTTON = { 
-        'no button'   : 0b00000000,
-        'menu_left'   : 0b10000000,
-        'menu_up'     : 0b01000000,
-        'menu_down'   : 0b00100000, 
-        'menu_right'  : 0b00010000,
-        'menu_toggle' : 0b00001000, 
-        'blank'       : 0b00000100, 
-        'time_cycle'  : 0b00000010,
-        'gain_cycle'  : 0b00000001,
+        'none'  : 0b00000000,
+        'left'  : 0b10000000,
+        'up'    : 0b01000000,
+        'down'  : 0b00100000, 
+        'right' : 0b00010000,
+        'menu'  : 0b00001000, 
+        'blank' : 0b00000100, 
+        'time'  : 0b00000010,
+        'gain'  : 0b00000001,
         }
 
 COLOR_TO_RGB = collections.OrderedDict([ 
