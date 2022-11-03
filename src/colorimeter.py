@@ -34,7 +34,7 @@ class Colorimeter:
 
     def __init__(self):
 
-        self.menu_items = self.DEFAULT_MEASUREMENTS 
+        self.menu_items = list(self.DEFAULT_MEASUREMENTS)
         self.menu_view_pos = 0
         self.menu_item_pos = 0
         self.mode = Mode.MEASURE
