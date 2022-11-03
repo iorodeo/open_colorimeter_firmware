@@ -10,6 +10,9 @@ from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
 from battery_monitor import BatteryMonitor
 
+from configuration import Configuration
+from configuration import ConfigurationError
+
 from calibrations import Calibrations
 from calibrations import CalibrationsError
 
@@ -31,6 +34,13 @@ class Colorimeter:
 
     def __init__(self):
 
+        self.menu_items = self.DEFAULT_MEASUREMENTS 
+        self.menu_view_pos = 0
+        self.menu_item_pos = 0
+        self.mode = Mode.MEASURE
+        self.is_blanked = False
+        self.blank_value = 0.0
+
         self.battery_monitor = BatteryMonitor()
 
         # Create screens
@@ -47,10 +57,16 @@ class Colorimeter:
                 digitalio.DigitalInOut(board.BUTTON_LATCH),
                 )
 
-        # TODO: Load Configuration
+        # Load Configuration
+        self.configuration = Configuration()
+        try:
+            self.configuration.load()
+        except ConfigurationError as error:
+            # Unable to load configuration file or not a dict after loading
+            self.error_screen.set_message(error)
+            self.mode = Mode.ERROR
 
         # Load calibrations and populate menu items
-        self.mode = Mode.MEASURE
         self.calibrations = Calibrations()
         try:
             self.calibrations.load()
@@ -65,18 +81,15 @@ class Colorimeter:
                 self.error_screen.set_message(error_msg)
                 self.mode = Mode.ERROR
 
-        self.menu_items = self.DEFAULT_MEASUREMENTS 
         self.menu_items.extend([k for k in self.calibrations.data])
-        self.menu_view_pos = 0
-        self.menu_item_pos = 0
         self.measurement_name = self.menu_items[0] 
 
         # Setup light sensor and blanking data 
         self.light_sensor = LightSensor()
-        self.blank_value = 0.0
-        self.blank_sensor()
+        self.light_sensor.gain = self.configuration.gain
+        self.light_sensor.integration_time = self.configuration.integration_time
+        self.blank_sensor(set_blanked=False)
         self.measure_screen.set_not_blanked()
-        self.is_blanked = False
 
     @property
     def num_menu_items(self):
@@ -160,7 +173,7 @@ class Colorimeter:
                     )
         return value
 
-    def blank_sensor(self):
+    def blank_sensor(self, set_blanked=True):
         blank_samples = ulab.numpy.zeros((constants.NUM_BLANK_SAMPLES,))
         for i in range(constants.NUM_BLANK_SAMPLES):
             try:
@@ -170,7 +183,8 @@ class Colorimeter:
             blank_samples[i] = value
             time.sleep(constants.BLANK_DT)
         self.blank_value = ulab.numpy.median(blank_samples)
-        self.is_blanked = True
+        if set_blanked:
+            self.is_blanked = True
 
     def blank_button_pressed(self, buttons):  
         if self.is_raw_sensor:

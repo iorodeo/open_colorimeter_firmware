@@ -34,14 +34,15 @@ COLOR_TO_RGB = collections.OrderedDict([
     ('orange' , 0xffb447),
     ])
 
-GAIN_STR_TO_SETTING = collections.OrderedDict([
+STR_TO_GAIN = collections.OrderedDict([
         ('low'  , adafruit_tsl2591.GAIN_LOW ),
         ('med'  , adafruit_tsl2591.GAIN_MED ),
         ('high' , adafruit_tsl2591.GAIN_HIGH),
         ('max'  , adafruit_tsl2591.GAIN_MAX ),
         ])
+GAIN_TO_STR = {v:k for k,v in STR_TO_GAIN.items()}
 
-INTEGRATION_TIME_STR_TO_SETTING = collections.OrderedDict([
+STR_TO_INTEGRATION_TIME = collections.OrderedDict([
         ('100ms', adafruit_tsl2591.INTEGRATIONTIME_100MS),
         ('200ms', adafruit_tsl2591.INTEGRATIONTIME_200MS),
         ('300ms', adafruit_tsl2591.INTEGRATIONTIME_300MS),
@@ -49,3 +50,4 @@ INTEGRATION_TIME_STR_TO_SETTING = collections.OrderedDict([
         ('500ms', adafruit_tsl2591.INTEGRATIONTIME_500MS),
         ('600ms', adafruit_tsl2591.INTEGRATIONTIME_600MS),
         ])
+INTEGRATION_TIME_TO_STR = {v:k for k,v in STR_TO_INTEGRATION_TIME.items()}

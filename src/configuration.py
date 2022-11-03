@@ -2,11 +2,12 @@ import os
 import json
 import constants
 from collections import OrderedDict
+from json_settings_file import JsonSettingsFile
 
 class ConfigurationError(Exception):
     pass
 
-class Configuration:
+class Configuration(JsonSettingsFile):
 
     FILE_TYPE = 'configuration'
     FILE_NAME = constants.CONFIGURATION_FILE
@@ -20,33 +21,43 @@ class Configuration:
 
         # Check gain
         try:
-            gain = self.data['gain']
+            gain_str = self.data['gain']
         except KeyError:
             error_msg = f'{self.FILE_TYPE} missing gain'
             error_dict['gain'] = error_msg
         else:
             try:
-                setting = constants.GAIN_STR_TO_SETTING[gain]
+                gain = constants.STR_TO_GAIN[gain_str]
             except KeyError:
-                error_msg = f'{self.FILE_TYPE} unknown gain {gain}'
+                error_msg = f'{self.FILE_TYPE} unknown gain {gain_str}'
                 error_dict['gain'] = error_msg
 
         # Check integration time
         try:
-            itime = self.data['integration_time']
+            itime_str = self.data['integration_time']
         except KeyError:
             error_msg = f'{self.FILE_TYPE} missing integration time'
             error_dict['integration_time'] = error_msg
         else:
 
             try:
-                setting = constants.INTEGRATION_TIME_STR_TO_SETTING[itime]
+                itime = constants.STR_TO_INTEGRATION_TIME[itime_str]
             except KeyError:
-                error_msg = f'{self.FILE_TYPE} unknown integration time {itime}'
+                error_msg = f'{self.FILE_TYPE} unknown integration time {itime_str}'
                 error_dict['integration_time'] = error_msg
 
         # Remove configurations with errors
         for name in self.error_dict:
             del self.data[name]
+
+    @property
+    def integration_time(self):
+        itime_str = self.data['integration_time']
+        return constants.STR_TO_INTEGRATION_TIME[itime_str]
+
+    @property
+    def gain(self):
+        gain_str = self.data['gain']
+        return constants.STR_TO_GAIN[gain_str]
             
     
