@@ -83,6 +83,7 @@ class Colorimeter:
 
         self.menu_items.extend([k for k in self.calibrations.data])
         self.measurement_name = self.menu_items[0] 
+        #self.measurement_name = self.menu_items[2] 
 
         # Setup light sensor and blanking data 
         self.light_sensor = LightSensor()
@@ -281,10 +282,19 @@ class Colorimeter:
 
                 # Display whether or not we have blanking data. Not relevant
                 # when device is displaying raw sensor data
-                if self.is_blanked or self.is_raw_sensor: 
+                if self.is_raw_sensor:
                     self.measure_screen.set_blanked()
+                    gain = self.light_sensor.gain
+                    itime = self.light_sensor.integration_time
+                    self.measure_screen.set_gain(gain)
+                    self.measure_screen.set_integration_time(itime)
                 else:
-                    self.measure_screen.set_not_blanked()
+                    if self.is_blanked:
+                        self.measure_screen.set_blanked()
+                    else:
+                        self.measure_screen.set_not_blanked()
+                    self.measure_screen.clear_gain()
+                    self.measure_screen.clear_integration_time()
 
                 # Update and display measurement of battery voltage
                 self.battery_monitor.update()

@@ -26,7 +26,7 @@ BUTTON = {
 
 COLOR_TO_RGB = collections.OrderedDict([ 
     ('black'  , 0x000000), 
-    ('gray'   , 0x7f7f7f), 
+    ('gray'   , 0x818181), 
     ('red'    , 0xff0000), 
     ('green'  , 0x00ff00),
     ('blue'   , 0x0000ff),
