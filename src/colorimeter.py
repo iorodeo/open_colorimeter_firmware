@@ -167,10 +167,15 @@ class Colorimeter:
         elif self.is_raw_sensor:
             value = self.raw_sensor_value
         else:
-            value = self.calibrations.apply(
-                    self.measurement_name, 
-                    self.absorbance
-                    )
+            try:
+                value = self.calibrations.apply( 
+                        self.measurement_name, 
+                        self.absorbance
+                        )
+            except CalibrationsError as error:
+                self.error_screen.set_message(error_message)
+                self.measurement_name = 'Absorbance'
+                self.mode = Mode.ERROR
         return value
 
     def blank_sensor(self, set_blanked=True):

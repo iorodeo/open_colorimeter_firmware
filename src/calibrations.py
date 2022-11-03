@@ -118,23 +118,33 @@ class Calibrations(JsonSettingsFile):
     def apply(self, name, absorbance):
         fit_type = self.data[name]['fit_type']
         fit_coef = ulab.numpy.array(self.data[name]['fit_coef'])
+
         if fit_type in ('linear', 'polynomial'):
+            # Get range min and max for checking if absorbance within range
             try:
                 range_min = self.data[name]['range']['min']
                 range_max = self.data[name]['range']['max']
             except KeyError:
-                pass
+                range_min = None
+                range_max = None
+
+            # Check to see if absorbance is within acceptable range
+            is_inside_range = True 
+            if range_min is not None:
+                is_inside_range &= absorbance >= range_min
+            if range_max is not None:
+                is_inside_range &= absorbance <= range_max
+
+            # Apply calibration if within range
+            if is_inside_range:
+                value = ulab.numpy.polyval(fit_coef, [absorbance])[0]
             else:
-                if absorbance >= range_min and absorbance <= range_max:
-                    value = ulab.numpy.polyval(fit_coef, [absorbance])[0]
-                else:
-                    value = None # out of range
+                value = None
         else:
-            error_message = f'{fit_type} fit type not implemented'
-            self.error_screen.set_message(error_message)
-            self.measurement_name = 'Absorbance'
-            self.mode = Mode.ERROR
-            value = 0.0
+            # We shouldn't be here ... unknown fit type
+            error_msg = f'{fit_type} fit type not implemented'
+            raise CalibrationsError(error_msg)
+
         return value
 
 
