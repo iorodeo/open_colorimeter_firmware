@@ -26,5 +26,6 @@ your feather development board.
     - adafruit_display_text
     - adafruit_display_shapes
     - adafruit_tsl2591
+    - adatfruit_itertools
   
 

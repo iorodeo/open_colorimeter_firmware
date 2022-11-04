@@ -5,6 +5,7 @@ import analogio
 import digitalio
 import gamepadshift
 import constants
+import adafruit_itertools
 
 from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
@@ -41,7 +42,6 @@ class Colorimeter:
         self.is_blanked = False
         self.blank_value = 0.0
 
-        self.battery_monitor = BatteryMonitor()
 
         # Create screens
         board.DISPLAY.brightness = 1.0
@@ -82,15 +82,27 @@ class Colorimeter:
                 self.mode = Mode.ERROR
 
         self.menu_items.extend([k for k in self.calibrations.data])
-        self.measurement_name = self.menu_items[0] 
-        #self.measurement_name = self.menu_items[2] 
+        #self.measurement_name = self.menu_items[0] 
+        self.measurement_name = self.menu_items[2] 
 
-        # Setup light sensor and blanking data 
+        # Setup light sensor and preliminary blanking 
         self.light_sensor = LightSensor()
         self.light_sensor.gain = self.configuration.gain
         self.light_sensor.integration_time = self.configuration.integration_time
         self.blank_sensor(set_blanked=False)
         self.measure_screen.set_not_blanked()
+
+        # Setup up battery monitoring settings cycles 
+        self.battery_monitor = BatteryMonitor()
+        self.setup_gain_and_itime_cycles()
+
+    def setup_gain_and_itime_cycles(self):
+        self.gain_cycle = adafruit_itertools.cycle(constants.GAIN_TO_STR) 
+        while next(self.gain_cycle) != self.configuration.gain: 
+            continue
+        self.itime_cycle = adafruit_itertools.cycle(constants.INTEGRATION_TIME_TO_STR)
+        while next(self.itime_cycle) != self.configuration.integration_time:
+            continue
 
     @property
     def num_menu_items(self):
@@ -210,6 +222,18 @@ class Colorimeter:
     def right_button_pressed(self, buttons):
         return buttons & constants.BUTTON['right']
 
+    def gain_button_pressed(self, buttons):
+        if self.is_raw_sensor:
+            return buttons & constants.BUTTON['gain']
+        else:
+            return False
+
+    def itime_button_pressed(self, buttons):
+        if self.is_raw_sensor:
+            return buttons & constants.BUTTON['itime']
+        else:
+            return False
+
     def handle_button_press(self):
         buttons = self.pad.get_pressed()
         if not buttons:
@@ -232,6 +256,12 @@ class Colorimeter:
                 self.mode = Mode.MENU
                 self.menu_item_pos = 0
                 self.update_menu_screen()
+            elif self.gain_button_pressed(buttons):
+                self.light_sensor.gain = next(self.gain_cycle)
+                self.is_blanked = False
+            elif self.itime_button_pressed(buttons):
+                self.light_sensor.integration_time = next(self.itime_cycle)
+                self.is_blanked = False
 
         elif self.mode == Mode.MENU:
             if self.menu_button_pressed(buttons):
