@@ -176,7 +176,7 @@ class MeasureScreen:
     def set_gain(self,value):
         if value is not None:
             value_str = constants.GAIN_TO_STR[value]
-            self.gain_label.text = f'gain {value_str}'
+            self.gain_label.text = f'gain={value_str}'
         else:
             self.gain_label.text = ''
 
@@ -186,7 +186,7 @@ class MeasureScreen:
     def set_integration_time(self,value):
         if value is not None:
             value_str = constants.INTEGRATION_TIME_TO_STR[value]
-            self.itime_label.text = f'time {value_str}'
+            self.itime_label.text = f'time={value_str}'
         else:
             self.itime_label.text = ''
 
