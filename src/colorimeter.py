@@ -40,7 +40,7 @@ class Colorimeter:
         self.menu_item_pos = 0
         self.mode = Mode.MEASURE
         self.is_blanked = False
-        self.blank_value = 0.0
+        self.blank_value = 1.0
 
 
         # Create screens
@@ -87,8 +87,10 @@ class Colorimeter:
 
         # Setup light sensor and preliminary blanking 
         self.light_sensor = LightSensor()
-        self.light_sensor.gain = self.configuration.gain
-        self.light_sensor.integration_time = self.configuration.integration_time
+        if self.configuration.gain is not None:
+            self.light_sensor.gain = self.configuration.gain
+        if self.configuration.integration_time is not None:
+            self.light_sensor.integration_time = self.configuration.integration_time
         self.blank_sensor(set_blanked=False)
         self.measure_screen.set_not_blanked()
 
@@ -98,11 +100,14 @@ class Colorimeter:
 
     def setup_gain_and_itime_cycles(self):
         self.gain_cycle = adafruit_itertools.cycle(constants.GAIN_TO_STR) 
-        while next(self.gain_cycle) != self.configuration.gain: 
-            continue
+        if self.configuration.gain is not None:
+            while next(self.gain_cycle) != self.configuration.gain: 
+                continue
+
         self.itime_cycle = adafruit_itertools.cycle(constants.INTEGRATION_TIME_TO_STR)
-        while next(self.itime_cycle) != self.configuration.integration_time:
-            continue
+        if self.configuration.integration_time is not None:
+            while next(self.itime_cycle) != self.configuration.integration_time:
+                continue
 
     @property
     def num_menu_items(self):

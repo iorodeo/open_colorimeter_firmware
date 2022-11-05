@@ -52,12 +52,25 @@ class Configuration(JsonSettingsFile):
 
     @property
     def integration_time(self):
-        itime_str = self.data['integration_time']
-        return constants.STR_TO_INTEGRATION_TIME[itime_str]
+        try:
+            itime_str = self.data['integration_time']
+        except KeyError:
+            itime = None
+        else:
+            itime = constants.STR_TO_INTEGRATION_TIME[itime_str]
+        return itime
 
     @property
     def gain(self):
-        gain_str = self.data['gain']
-        return constants.STR_TO_GAIN[gain_str]
+        try:
+            gain_str = self.data['gain']
+        except KeyError:
+            gain = None
+        else:
+            gain = constants.STR_TO_GAIN[gain_str]
+        return gain
+
+
+            
             
     
