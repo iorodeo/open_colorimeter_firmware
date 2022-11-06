@@ -73,11 +73,20 @@ class ErrorScreen:
         for error_label in self.error_label_list:
             self.group.append(error_label)
 
-    def set_message(self, message):
-        message_extended = f'{message}. Press any key to continue.'
+    def set_message(self, message, ok_to_continue=True):
+        if ok_to_continue:
+            message_extended = f'{message}. Press any key to continue.'
+        else:
+            message_extended = f'{message}'
         wrapped_message = wrap_text_to_lines(message_extended, self.MESSAGE_MAX_CHARS) 
         for error_label, line in zip(self.error_label_list, wrapped_message):
             error_label.text = line  
+
+    def set_to_abort(self):
+        self.set_header('ABORT')
+
+    def set_header(self, header):
+        self.header_label.text = header
 
     def show(self):
         board.DISPLAY.show(self.group)

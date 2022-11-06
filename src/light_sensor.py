@@ -15,7 +15,10 @@ class LightSensor:
 
         # Set up light sensor
         i2c = busio.I2C(board.SCL, board.SDA)
-        self._device = adafruit_tsl2591.TSL2591(i2c)
+        try:
+            self._device = adafruit_tsl2591.TSL2591(i2c)
+        except ValueError as error:
+            raise LightSensorIOError(error)
         self.gain = self.DEFAULT_GAIN 
         self.integration_time = self.DEFAULT_INTEGRATION_TIME 
         self.channel = 0
@@ -56,3 +59,7 @@ class LightSensor:
 
 class LightSensorOverflow(Exception):
     pass
+
+class LightSensorIOError(Exception):
+    pass
+

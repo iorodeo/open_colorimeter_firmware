@@ -9,6 +9,8 @@ import adafruit_itertools
 
 from light_sensor import LightSensor
 from light_sensor import LightSensorOverflow
+from light_sensor import LightSensorIOError
+
 from battery_monitor import BatteryMonitor
 
 from configuration import Configuration
@@ -25,6 +27,7 @@ class Mode:
     MEASURE = 0
     MENU    = 1
     ERROR   = 2
+    ABORT   = 3
 
 class Colorimeter:
 
@@ -86,13 +89,20 @@ class Colorimeter:
         self.measurement_name = self.menu_items[2] 
 
         # Setup light sensor and preliminary blanking 
-        self.light_sensor = LightSensor()
-        if self.configuration.gain is not None:
-            self.light_sensor.gain = self.configuration.gain
-        if self.configuration.integration_time is not None:
-            self.light_sensor.integration_time = self.configuration.integration_time
-        self.blank_sensor(set_blanked=False)
-        self.measure_screen.set_not_blanked()
+        try:
+            self.light_sensor = LightSensor()
+        except LightSensorIOError as error:
+            error_msg = f'missing sensor? {error}'
+            self.error_screen.set_message(error_msg,ok_to_continue=False)
+            self.error_screen.set_to_abort()
+            self.mode = Mode.ABORT
+        else:
+            if self.configuration.gain is not None:
+                self.light_sensor.gain = self.configuration.gain
+            if self.configuration.integration_time is not None:
+                self.light_sensor.integration_time = self.configuration.integration_time
+            self.blank_sensor(set_blanked=False)
+            self.measure_screen.set_not_blanked()
 
         # Setup up battery monitoring settings cycles 
         self.battery_monitor = BatteryMonitor()
@@ -341,7 +351,7 @@ class Colorimeter:
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
 
-            elif self.mode == Mode.ERROR:
+            elif self.mode in (Mode.ERROR, Mode.ABORT):
                 self.error_screen.show()
 
             time.sleep(constants.LOOP_DT)
