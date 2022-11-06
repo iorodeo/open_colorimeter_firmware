@@ -85,8 +85,16 @@ class Colorimeter:
                 self.mode = Mode.ERROR
 
         self.menu_items.extend([k for k in self.calibrations.data])
-        #self.measurement_name = self.menu_items[0] 
-        self.measurement_name = self.menu_items[2] 
+
+        # Set default/startup measurement
+        if self.configuration.startup in self.menu_items:
+            self.measurement_name = self.configuration.startup
+        else:
+            if self.configuration.startup is not None:
+                error_msg = f'startup measurement {self.configuration.startup} not found'
+                self.error_screen.set_message(error_msg)
+                self.mode = Mode.ERROR
+            self.measurement_name = self.menu_items[0] 
 
         # Setup light sensor and preliminary blanking 
         try:

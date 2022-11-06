@@ -70,6 +70,11 @@ class Configuration(JsonSettingsFile):
             gain = constants.STR_TO_GAIN[gain_str]
         return gain
 
+    @property
+    def startup(self):
+        return self.data.get('startup', None)
+
+
 
             
             
