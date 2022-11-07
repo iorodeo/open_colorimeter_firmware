@@ -1,30 +1,57 @@
 {
-  "Ammonia": {
+  "Ammonia API": {
     "units": "ppm",
+    "led": "630",
     "fit_type": "polynomial",
     "fit_coef": [
-      0.6995225710876956,
-      4.451756099596242,
+      1.0128521350438369,
+      1.890930808804952,
       0.0
     ],
-    "led": 595,
     "range": {
       "min": 0.0,
-      "max": 1.43
+      "max": 2.0
     }
   },
-  "Nitrite": {
-    "units": "ppm",
+  "FD&C Blue 1": {
+    "units": "mg/L",
+    "led": "630",
     "fit_type": "polynomial",
     "fit_coef": [
-      0.11543984594053638,
-      1.2747960322708907,
+      9.657673193787982,
       0.0
     ],
-    "led": 520,
     "range": {
       "min": 0.0,
-      "max": 1.39
+      "max": 0.81
+    }
+  },
+  "Nitrate API": {
+    "units": "ppm",
+    "led": "520",
+    "fit_type": "polynomial",
+    "fit_coef": [
+      0.32039213453320625,
+      34.032597696304,
+      0.0
+    ],
+    "range": {
+      "min": 0.0,
+      "max": 1.47
+    }
+  },
+  "Nitrite API": {
+    "units": "ppm",
+    "led": "520",
+    "fit_type": "polynomial",
+    "fit_coef": [
+      0.13111937060865314,
+      1.2591439203550079,
+      0.0
+    ],
+    "range": {
+      "min": 0.0,
+      "max": 1.4
     }
   }
 }

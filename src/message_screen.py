@@ -47,15 +47,15 @@ class MessageScreen:
         header_label_y = bbox[3] + self.SPACING_HEADER_LABEL
         self.header_label.anchored_position = (header_label_x, header_label_y)
 
-        # Create error message labels
+        # Create message labels
         self.message_label_list = []
         message_label_y = header_label_y + self.SPACING_MESSAGE_LABEL
         for i in range(self.NUM_MESSAGE_LABEL): 
-            error_message_str = ' '*self.MESSAGE_MAX_CHARS
+            message_str = ' '*self.MESSAGE_MAX_CHARS
             text_color = constants.COLOR_TO_RGB['orange']
             message_label = label.Label(
                     fonts.font_10pt, 
-                    text = error_message_str, 
+                    text = message_str, 
                     color = text_color, 
                     scale = font_scale,
                     anchor_point = (0.5,1.0),

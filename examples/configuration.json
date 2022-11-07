@@ -1,5 +1,5 @@
 {
   "gain" : "med",
-  "integration_time" : "500ms"
-  "startup" : "Raw Sensor"
+  "integration_time" : "500ms",
+  "startup" : "Absorbance"
 } 
