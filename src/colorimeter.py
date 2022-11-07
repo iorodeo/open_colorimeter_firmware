@@ -277,6 +277,7 @@ class Colorimeter:
                 self.blank_sensor()
             elif self.menu_button_pressed(buttons):
                 self.mode = Mode.MENU
+                self.menu_view_pos = 0
                 self.menu_item_pos = 0
                 self.update_menu_screen()
             elif self.gain_button_pressed(buttons):
