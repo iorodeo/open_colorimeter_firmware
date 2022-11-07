@@ -20,17 +20,18 @@ from calibrations import Calibrations
 from calibrations import CalibrationsError
 
 from menu_screen import MenuScreen
-from error_screen import ErrorScreen
+from message_screen import MessageScreen
 from measure_screen import MeasureScreen
 
 class Mode:
     MEASURE = 0
     MENU    = 1
-    ERROR   = 2
+    MESSAGE = 2
     ABORT   = 3
 
 class Colorimeter:
 
+    ABOUT_STR = 'About'
     RAW_SENSOR_STR = 'Raw Sensor' 
     ABSORBANCE_STR = 'Absorbance'
     TRANSMITTANCE_STR = 'Transmittance'
@@ -49,7 +50,7 @@ class Colorimeter:
         # Create screens
         board.DISPLAY.brightness = 1.0
         self.measure_screen = MeasureScreen()
-        self.error_screen = ErrorScreen()
+        self.message_screen = MessageScreen()
         self.menu_screen = MenuScreen()
 
         # Setup gamepad inputs - change this (Keypad shift??)
@@ -66,8 +67,9 @@ class Colorimeter:
             self.configuration.load()
         except ConfigurationError as error:
             # Unable to load configuration file or not a dict after loading
-            self.error_screen.set_message(error)
-            self.mode = Mode.ERROR
+            self.message_screen.set_message(error)
+            self.message_screen.set_to_error()
+            self.mode = Mode.MESSAGE
 
         # Load calibrations and populate menu items
         self.calibrations = Calibrations()
@@ -75,16 +77,19 @@ class Colorimeter:
             self.calibrations.load()
         except CalibrationsError as error: 
             # Unable to load calibrations file or not a dict after loading
-            self.error_screen.set_message(error) 
-            self.mode = Mode.ERROR
+            self.message_screen.set_message(error) 
+            self.message_screen.set_to_error()
+            self.mode = Mode.MESSAGE
         else:
             # We can load calibration, but detected errors in some calibrations
             if self.calibrations.has_errors:
                 error_msg = f'errors found in calibrations file'
-                self.error_screen.set_message(error_msg)
-                self.mode = Mode.ERROR
+                self.message_screen.set_message(error_msg)
+                self.message_screen.set_to_error()
+                self.mode = Mode.MESSAGE
 
         self.menu_items.extend([k for k in self.calibrations.data])
+        self.menu_items.append(self.ABOUT_STR)
 
         # Set default/startup measurement
         if self.configuration.startup in self.menu_items:
@@ -92,8 +97,9 @@ class Colorimeter:
         else:
             if self.configuration.startup is not None:
                 error_msg = f'startup measurement {self.configuration.startup} not found'
-                self.error_screen.set_message(error_msg)
-                self.mode = Mode.ERROR
+                self.message_screen.set_message(error_msg)
+                self.message_screen.set_to_error()
+                self.mode = Mode.MESSAGE
             self.measurement_name = self.menu_items[0] 
 
         # Setup light sensor and preliminary blanking 
@@ -101,8 +107,8 @@ class Colorimeter:
             self.light_sensor = LightSensor()
         except LightSensorIOError as error:
             error_msg = f'missing sensor? {error}'
-            self.error_screen.set_message(error_msg,ok_to_continue=False)
-            self.error_screen.set_to_abort()
+            self.message_screen.set_message(error_msg,ok_to_continue=False)
+            self.message_screen.set_to_abort()
             self.mode = Mode.ABORT
         else:
             if self.configuration.gain is not None:
@@ -209,9 +215,10 @@ class Colorimeter:
                         self.absorbance
                         )
             except CalibrationsError as error:
-                self.error_screen.set_message(error_message)
+                self.message_screen.set_message(error_message)
+                self.message_screen.set_to_error()
                 self.measurement_name = 'Absorbance'
-                self.mode = Mode.ERROR
+                self.mode = Mode.MESSAGE
         return value
 
     def blank_sensor(self, set_blanked=True):
@@ -295,15 +302,23 @@ class Colorimeter:
             elif self.down_button_pressed(buttons): 
                 self.incr_menu_item_pos()
             elif self.right_button_pressed(buttons): 
-                self.measurement_name = self.menu_items[self.menu_item_pos]
-                self.mode = Mode.MEASURE
+                selected_item = self.menu_items[self.menu_item_pos]
+                if selected_item == self.ABOUT_STR:
+                    about_msg = f'firmware version {constants.__version__}'
+                    self.message_screen.set_message(about_msg) 
+                    self.message_screen.set_to_about()
+                    self.mode = Mode.MESSAGE
+                else:
+                    self.measurement_name = self.menu_items[self.menu_item_pos]
+                    self.mode = Mode.MEASURE
             self.update_menu_screen()
 
-        elif self.mode == Mode.ERROR:
+        elif self.mode == Mode.MESSAGE:
             if self.calibrations.has_errors:
                 error_msg = self.calibrations.pop_error()
-                self.error_screen.set_message(error_msg)
-                self.mode = Mode.ERROR
+                self.message_screen.set_message(error_msg)
+                self.message_screen.set_to_error()
+                self.mode = Mode.MESSAGE
             else:
                 self.mode = Mode.MEASURE
 
@@ -360,8 +375,8 @@ class Colorimeter:
             elif self.mode == Mode.MENU:
                 self.menu_screen.show()
 
-            elif self.mode in (Mode.ERROR, Mode.ABORT):
-                self.error_screen.show()
+            elif self.mode in (Mode.MESSAGE, Mode.ABORT):
+                self.message_screen.show()
 
             time.sleep(constants.LOOP_DT)
 

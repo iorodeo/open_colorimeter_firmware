@@ -6,13 +6,13 @@ from adafruit_display_text import label
 from adafruit_display_text import wrap_text_to_lines 
 
 
-class ErrorScreen:
+class MessageScreen:
 
     SPACING_HEADER_LABEL = 10 
     SPACING_MESSAGE_LABEL = 10  
     HEIGHT_MESSAGE_LABEL = 10
     MESSAGE_MAX_CHARS = 18
-    NUM_ERROR_LABEL = 4
+    NUM_MESSAGE_LABEL = 4
 
     def __init__(self):
 
@@ -33,7 +33,7 @@ class ErrorScreen:
         font_scale = 1
 
         # Create header label
-        header_str = 'ERROR'
+        header_str = 'MESSAGE'
         text_color = constants.COLOR_TO_RGB['white']
         self.header_label = label.Label(
                 fonts.font_14pt, 
@@ -48,30 +48,30 @@ class ErrorScreen:
         self.header_label.anchored_position = (header_label_x, header_label_y)
 
         # Create error message labels
-        self.error_label_list = []
-        error_label_y = header_label_y + self.SPACING_MESSAGE_LABEL
-        for i in range(self.NUM_ERROR_LABEL): 
+        self.message_label_list = []
+        message_label_y = header_label_y + self.SPACING_MESSAGE_LABEL
+        for i in range(self.NUM_MESSAGE_LABEL): 
             error_message_str = ' '*self.MESSAGE_MAX_CHARS
             text_color = constants.COLOR_TO_RGB['orange']
-            error_label = label.Label(
+            message_label = label.Label(
                     fonts.font_10pt, 
                     text = error_message_str, 
                     color = text_color, 
                     scale = font_scale,
                     anchor_point = (0.5,1.0),
                     )
-            bbox = error_label.bounding_box
-            error_label_x = board.DISPLAY.width//2
-            error_label_y += self.HEIGHT_MESSAGE_LABEL + self.SPACING_MESSAGE_LABEL 
-            error_label.anchored_position = (error_label_x, error_label_y)
-            self.error_label_list.append(error_label)
+            bbox = message_label.bounding_box
+            message_label_x = board.DISPLAY.width//2
+            message_label_y += self.HEIGHT_MESSAGE_LABEL + self.SPACING_MESSAGE_LABEL 
+            message_label.anchored_position = (message_label_x, message_label_y)
+            self.message_label_list.append(message_label)
         
         # Ceate display group and add items to it
         self.group = displayio.Group()
         self.group.append(self.tile_grid)
         self.group.append(self.header_label)
-        for error_label in self.error_label_list:
-            self.group.append(error_label)
+        for message_label in self.message_label_list:
+            self.group.append(message_label)
 
     def set_message(self, message, ok_to_continue=True):
         if ok_to_continue:
@@ -79,14 +79,20 @@ class ErrorScreen:
         else:
             message_extended = f'{message}'
         wrapped_message = wrap_text_to_lines(message_extended, self.MESSAGE_MAX_CHARS) 
-        for error_label, line in zip(self.error_label_list, wrapped_message):
-            error_label.text = line  
-
-    def set_to_abort(self):
-        self.set_header('ABORT')
+        for message_label, line in zip(self.message_label_list, wrapped_message):
+            message_label.text = line  
 
     def set_header(self, header):
         self.header_label.text = header
+
+    def set_to_error(self):
+        self.header_label.text = 'Error'
+
+    def set_to_abort(self):
+        self.header_label.text = 'Abort'
+        
+    def set_to_about(self):
+        self.header_label.text = 'About'
 
     def show(self):
         board.DISPLAY.show(self.group)
