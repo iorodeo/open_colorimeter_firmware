@@ -142,7 +142,7 @@ class MeasureScreen:
         self.group.append(self.itime_label)
         self.group.append(self.bat_label)
 
-    def set_measurement(self, name, units, value):
+    def set_measurement(self, name, units, value, precision):
         if value is None:
             self.value_label.color = constants.COLOR_TO_RGB['orange']
             self.value_label.text = 'range error' 
@@ -150,12 +150,12 @@ class MeasureScreen:
             if units is None:
                 self.header_label.text = name
                 if type(value) == float:
-                    label_text = f'{value:1.2f}'
+                    label_text = f'{value:1.{precision}f}'
                 else: 
                     label_text = f'{value}'
             else:
                 self.header_label.text = name
-                label_text = f'{value:1.2f} {units}'
+                label_text = f'{value:1.{precision}f} {units}'
             self.value_label.text = label_text.replace('0','O')
             self.value_label.color = constants.COLOR_TO_RGB['white']
 

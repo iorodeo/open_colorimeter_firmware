@@ -344,7 +344,8 @@ class Colorimeter:
                     self.measure_screen.set_measurement(
                             self.measurement_name, 
                             self.measurement_units, 
-                            self.measurement_value
+                            self.measurement_value,
+                            self.configuration.precision
                             )
                 except LightSensorOverflow:
                     self.measure_screen.set_overflow(self.measurement_name)

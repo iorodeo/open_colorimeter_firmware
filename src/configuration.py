@@ -12,7 +12,8 @@ class Configuration(JsonSettingsFile):
     FILE_TYPE = 'configuration'
     FILE_NAME = constants.CONFIGURATION_FILE
     LOAD_ERROR_EXCEPTION = ConfigurationError
-
+    ALLOWED_PRECISION = (2,3,4)
+    DEFAULT_PRECISION = 2
 
     def __init__(self):
         super().__init__()
@@ -50,6 +51,17 @@ class Configuration(JsonSettingsFile):
         for name in self.error_dict:
             del self.data[name]
 
+        # Check precision
+        self.data.setdefault('precision', self.DEFAULT_PRECISION)
+        try:
+            precision = self.data['precision']
+        except KeyError:
+            pass
+        else:
+            if not precision in self.ALLOWED_PRECISION:
+                error_msg = f'precision must be in{self.ALLOWED_PRECISION}'
+                error_dict['precision'] = error_msg
+
     @property
     def integration_time(self):
         try:
@@ -73,6 +85,10 @@ class Configuration(JsonSettingsFile):
     @property
     def startup(self):
         return self.data.get('startup', None)
+
+    @property
+    def precision(self):
+        return self.data['precision']
 
 
 
